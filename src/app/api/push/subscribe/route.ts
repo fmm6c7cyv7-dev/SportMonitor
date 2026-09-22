@@ -2,13 +2,14 @@
 
 import { NextResponse } from "next/server";
 import { supabaseService } from "@/lib/supabase";
-
-/* ==========================================================================
-   TYPES
-   ========================================================================== */
+import {
+  guardPublicApi,
+  isSafeDeviceId,
+  readJsonObject,
+} from "@/lib/server/publicApiGuard";
 
 type PushSubscriptionPayload = {
-  endpoint: string;
+  endpoint?: string;
   keys?: {
     p256dh?: string;
     auth?: string;
@@ -26,9 +27,9 @@ type UnsubscribeRequestBody = {
   endpoint?: string;
 };
 
-/* ==========================================================================
-   HELPERS
-   ========================================================================== */
+const MAX_BODY_BYTES = 8_192;
+const MAX_ENDPOINT_LENGTH = 2_048;
+const MAX_USER_AGENT_LENGTH = 512;
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -38,24 +39,65 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Unknown server error";
 }
 
-/* ==========================================================================
-   POST
-   ========================================================================== */
+function isSafePushEndpoint(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  const endpoint = value.trim();
+
+  if (!endpoint || endpoint.length > MAX_ENDPOINT_LENGTH) return false;
+
+  try {
+    return new URL(endpoint).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function isSafePushKey(
+  value: unknown,
+  minLength: number,
+  maxLength: number,
+): value is string {
+  return (
+    typeof value === "string" &&
+    value.length >= minLength &&
+    value.length <= maxLength &&
+    /^[A-Za-z0-9_-]+$/.test(value)
+  );
+}
 
 export async function POST(req: Request) {
-  try {
-    const body = (await req.json()) as SubscribeRequestBody;
+  const guarded = guardPublicApi(req, {
+    key: "push-subscribe:post",
+    limit: 5,
+    maxBodyBytes: MAX_BODY_BYTES,
+  });
+  if (guarded) return guarded;
 
-    const { device_id, subscription, userAgent } = body;
+  try {
+    const parsed = await readJsonObject<Record<string, unknown>>(
+      req,
+      MAX_BODY_BYTES,
+    );
+    if (!parsed.ok) return parsed.response;
+
+    const body = parsed.value as SubscribeRequestBody;
+    const deviceId = body.device_id?.trim();
+    const endpoint = body.subscription?.endpoint?.trim();
+    const p256dh = body.subscription?.keys?.p256dh;
+    const auth = body.subscription?.keys?.auth;
+    const userAgent =
+      typeof body.userAgent === "string"
+        ? body.userAgent.trim().slice(0, MAX_USER_AGENT_LENGTH)
+        : null;
 
     if (
-      !device_id ||
-      !subscription?.endpoint ||
-      !subscription.keys?.p256dh ||
-      !subscription.keys?.auth
+      !isSafeDeviceId(deviceId) ||
+      !isSafePushEndpoint(endpoint) ||
+      !isSafePushKey(p256dh, 40, 256) ||
+      !isSafePushKey(auth, 8, 128)
     ) {
       return NextResponse.json(
-        { ok: false, error: "missing params" },
+        { ok: false, error: "invalid params" },
         { status: 400 },
       );
     }
@@ -63,17 +105,13 @@ export async function POST(req: Request) {
     const supabase = supabaseService();
     const timestamp = nowIso();
 
-    /* ----------------------------------------------------------------------
-       Disable all old subscriptions for this device
-       ---------------------------------------------------------------------- */
-
     const { error: disableError } = await supabase
       .from("push_subscriptions")
       .update({
         enabled: false,
         updated_at: timestamp,
       })
-      .eq("device_id", device_id);
+      .eq("device_id", deviceId);
 
     if (disableError) {
       console.error("[push/subscribe] disable failed:", disableError);
@@ -83,17 +121,10 @@ export async function POST(req: Request) {
       );
     }
 
-    /* ----------------------------------------------------------------------
-       Reuse an existing browser endpoint when the client self-heals.
-       endpoint is UNIQUE, so repeated registration must be idempotent.
-       Preserve created_at so re-registration does not make existing news
-       look retroactive to a newly-created subscription.
-       ---------------------------------------------------------------------- */
-
     const { data: existingSubscription, error: lookupError } = await supabase
       .from("push_subscriptions")
       .select("id")
-      .eq("endpoint", subscription.endpoint)
+      .eq("endpoint", endpoint)
       .maybeSingle();
 
     if (lookupError) {
@@ -108,11 +139,11 @@ export async function POST(req: Request) {
       const { error: updateError } = await supabase
         .from("push_subscriptions")
         .update({
-          device_id,
-          p256dh: subscription.keys.p256dh,
-          auth: subscription.keys.auth,
+          device_id: deviceId,
+          p256dh,
+          auth,
           enabled: true,
-          user_agent: userAgent ?? null,
+          user_agent: userAgent,
           updated_at: timestamp,
         })
         .eq("id", existingSubscription.id);
@@ -128,19 +159,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, reused: true });
     }
 
-    /* ----------------------------------------------------------------------
-       Insert a genuinely new subscription
-       ---------------------------------------------------------------------- */
-
     const { error: insertError } = await supabase
       .from("push_subscriptions")
       .insert({
-        device_id,
-        endpoint: subscription.endpoint,
-        p256dh: subscription.keys.p256dh,
-        auth: subscription.keys.auth,
+        device_id: deviceId,
+        endpoint,
+        p256dh,
+        auth,
         enabled: true,
-        user_agent: userAgent ?? null,
+        user_agent: userAgent,
         created_at: timestamp,
         updated_at: timestamp,
       });
@@ -163,19 +190,28 @@ export async function POST(req: Request) {
   }
 }
 
-/* ==========================================================================
-   DELETE
-   ========================================================================== */
-
 export async function DELETE(req: Request) {
+  const guarded = guardPublicApi(req, {
+    key: "push-subscribe:delete",
+    limit: 10,
+    maxBodyBytes: 4_096,
+  });
+  if (guarded) return guarded;
+
   try {
-    const body = (await req.json()) as UnsubscribeRequestBody;
+    const parsed = await readJsonObject<Record<string, unknown>>(req, 4_096);
+    if (!parsed.ok) return parsed.response;
 
-    const { device_id, endpoint } = body;
+    const body = parsed.value as UnsubscribeRequestBody;
+    const deviceId = body.device_id?.trim();
+    const endpoint = body.endpoint?.trim();
 
-    if (!device_id) {
+    if (
+      !isSafeDeviceId(deviceId) ||
+      (endpoint != null && endpoint !== "" && !isSafePushEndpoint(endpoint))
+    ) {
       return NextResponse.json(
-        { ok: false, error: "missing device_id" },
+        { ok: false, error: "invalid params" },
         { status: 400 },
       );
     }
@@ -189,7 +225,7 @@ export async function DELETE(req: Request) {
         enabled: false,
         updated_at: timestamp,
       })
-      .eq("device_id", device_id);
+      .eq("device_id", deviceId);
 
     if (endpoint) {
       query = query.eq("endpoint", endpoint);
