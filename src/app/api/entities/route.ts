@@ -3,6 +3,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { supabaseService } from "@/lib/supabase";
+import { guardPublicApi } from "@/lib/server/publicApiGuard";
 
 /* ==========================================================================
    ROUTE CONFIG
@@ -83,9 +84,12 @@ function iconForType(type: EntityType): string {
    ========================================================================== */
 
 export async function GET(req: NextRequest) {
+  const guarded = guardPublicApi(req, { key: "entities:get", limit: 60 });
+  if (guarded) return guarded;
+
   const sport = parseSport(req.nextUrl.searchParams.get("sport"));
   const type = parseType(req.nextUrl.searchParams.get("type"));
-  const query = (req.nextUrl.searchParams.get("q") ?? "").trim();
+  const query = (req.nextUrl.searchParams.get("q") ?? "").trim().slice(0, 120);
 
   const limit = clampInt(
     Number(req.nextUrl.searchParams.get("limit") ?? `${DEFAULT_LIMIT}`),

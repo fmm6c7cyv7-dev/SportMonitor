@@ -2,6 +2,7 @@
 
 import type { NextRequest } from "next/server";
 import { handleNewsFeedRequest } from "@/lib/feed/newsFeedRequest";
+import { guardPublicApi } from "@/lib/server/publicApiGuard";
 
 export {
   adaptLegacyFavoriteSignalsToEngineFavorites,
@@ -27,5 +28,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  const guarded = guardPublicApi(req, { key: "news:get", limit: 120 });
+  if (guarded) return guarded;
+
   return handleNewsFeedRequest(req);
 }
