@@ -1,0 +1,17 @@
+env.vercel
+env.vercelprod
+.env*
+!.env.example
+.env.local
+.env.vercelprod
+.env.*.backup
+.env.*.save
+.env*.bak
+.env*.old
+.env*.orig
+.env*.copy
+.env*~
+node_modules
+.next/
+.vercel
+*.tsbuildinfo
