@@ -3,6 +3,11 @@
 import { NextResponse } from "next/server";
 import { supabaseService } from "@/lib/supabase";
 import { normalizeToken } from "@/lib/news/newsGeo";
+import {
+  guardPublicApi,
+  isSafeDeviceId,
+  readJsonObject,
+} from "@/lib/server/publicApiGuard";
 import type { Sport } from "@/lib/types";
 
 /* ==========================================================================
@@ -14,6 +19,9 @@ export const dynamic = "force-dynamic";
 /* ==========================================================================
    TYPES
    ========================================================================== */
+
+const MAX_FAVORITES = 5;
+const MAX_BODY_BYTES = 4_096;
 
 type FavoriteLookupType = "player" | "team" | "league";
 
@@ -161,7 +169,14 @@ function validateBody(body: FavoriteRequestBody): {
   const sport = body.sport?.trim();
   const type = body.type?.trim();
 
-  if (!deviceId || !entityId) {
+  if (
+    !isSafeDeviceId(deviceId) ||
+    !entityId ||
+    entityId.length > 160 ||
+    (name != null && name.length > 160) ||
+    (sport != null && sport.length > 20) ||
+    (type != null && type.length > 20)
+  ) {
     return {
       ok: false,
       response: NextResponse.json(
@@ -196,10 +211,13 @@ export function shouldClearAllFavorites(req: Request): boolean {
    ========================================================================== */
 
 export async function GET(req: Request) {
+  const guarded = guardPublicApi(req, { key: "favorites:get", limit: 60 });
+  if (guarded) return guarded;
+
   try {
     const deviceId = getDeviceIdFromRequest(req);
 
-    if (!deviceId) {
+    if (!isSafeDeviceId(deviceId)) {
       return NextResponse.json(
         { ok: false, error: "missing device_id" },
         { status: 400 },
@@ -256,8 +274,21 @@ export async function GET(req: Request) {
    ========================================================================== */
 
 export async function POST(req: Request) {
+  const guarded = guardPublicApi(req, {
+    key: "favorites:post",
+    limit: 20,
+    maxBodyBytes: MAX_BODY_BYTES,
+  });
+  if (guarded) return guarded;
+
   try {
-    const body = (await req.json()) as FavoriteRequestBody;
+    const parsed = await readJsonObject<Record<string, unknown>>(
+      req,
+      MAX_BODY_BYTES,
+    );
+    if (!parsed.ok) return parsed.response;
+
+    const body = parsed.value as FavoriteRequestBody;
     const validated = validateBody(body);
 
     if (!validated.ok) {
@@ -279,6 +310,27 @@ export async function POST(req: Request) {
     }
 
     const supabase = supabaseService();
+
+    const { data: existingFavorites, error: existingError } = await supabase
+      .from("user_favorites")
+      .select("entity_id")
+      .eq("device_id", validated.deviceId)
+      .limit(MAX_FAVORITES + 1);
+
+    if (existingError) {
+      throw existingError;
+    }
+
+    const alreadyExists = (existingFavorites ?? []).some(
+      (row) => row.entity_id === resolved.entityId,
+    );
+
+    if (!alreadyExists && (existingFavorites?.length ?? 0) >= MAX_FAVORITES) {
+      return NextResponse.json(
+        { ok: false, error: `Max ${MAX_FAVORITES} favoriter` },
+        { status: 409 },
+      );
+    }
 
     const { error } = await supabase.from("user_favorites").upsert(
       {
@@ -311,12 +363,19 @@ export async function POST(req: Request) {
    ========================================================================== */
 
 export async function DELETE(req: Request) {
+  const guarded = guardPublicApi(req, {
+    key: "favorites:delete",
+    limit: 20,
+    maxBodyBytes: MAX_BODY_BYTES,
+  });
+  if (guarded) return guarded;
+
   try {
     const queryDeviceId = getDeviceIdFromRequest(req);
     const clearAll = shouldClearAllFavorites(req);
 
     if (clearAll) {
-      if (!queryDeviceId) {
+      if (!isSafeDeviceId(queryDeviceId)) {
         return NextResponse.json(
           { ok: false, error: "missing device_id" },
           { status: 400 },
@@ -336,7 +395,13 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ ok: true, cleared: true });
     }
 
-    const body = (await req.json()) as FavoriteRequestBody;
+    const parsed = await readJsonObject<Record<string, unknown>>(
+      req,
+      MAX_BODY_BYTES,
+    );
+    if (!parsed.ok) return parsed.response;
+
+    const body = parsed.value as FavoriteRequestBody;
     const validated = validateBody(body);
 
     if (!validated.ok) {
