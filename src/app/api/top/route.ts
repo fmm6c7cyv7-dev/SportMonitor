@@ -306,8 +306,8 @@ function buildFallbackResponse(args: {
    ROUTE
    ========================================================================== */
 
-export async function GET() {
-  const guarded = guardPublicApi(, { key: "top:get", limit: 60 });
+export async function GET(req: Request) {
+  const guarded = guardPublicApi(req, { key: "top:get", limit: 60 });
   if (guarded) return guarded;
 
   const lastUpdatedAt = new Date().toISOString();
