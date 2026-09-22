@@ -28,7 +28,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const guarded = guardPublicApi(req, { key: "news:get", limit: 120 });
+  const guarded = guardPublicApi(req, { key: "news:get", limit: 60 });
   if (guarded) return guarded;
 
   return handleNewsFeedRequest(req);

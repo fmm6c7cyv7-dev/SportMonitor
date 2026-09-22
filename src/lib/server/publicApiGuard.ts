@@ -53,8 +53,37 @@ export function guardPublicApi(
   request: Request,
   options: GuardOptions,
 ): NextResponse | null {
+  const isWrite = request.method !== "GET" && request.method !== "HEAD";
+
+  if (isWrite) {
+    const fetchSite = request.headers.get("sec-fetch-site");
+    if (fetchSite === "cross-site") {
+      return NextResponse.json(
+        { ok: false, error: "Cross-site request blocked" },
+        { status: 403, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+
+    const origin = request.headers.get("origin");
+    if (origin) {
+      try {
+        if (new URL(origin).host !== new URL(request.url).host) {
+          return NextResponse.json(
+            { ok: false, error: "Cross-origin request blocked" },
+            { status: 403, headers: { "Cache-Control": "no-store" } },
+          );
+        }
+      } catch {
+        return NextResponse.json(
+          { ok: false, error: "Invalid request origin" },
+          { status: 400, headers: { "Cache-Control": "no-store" } },
+        );
+      }
+    }
+  }
+
   const maxBodyBytes = options.maxBodyBytes;
-  if (maxBodyBytes && request.method !== "GET" && request.method !== "HEAD") {
+  if (maxBodyBytes && isWrite) {
     const contentLength = Number(request.headers.get("content-length") ?? "0");
     if (Number.isFinite(contentLength) && contentLength > maxBodyBytes) {
       return NextResponse.json(
