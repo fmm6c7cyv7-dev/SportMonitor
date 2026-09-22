@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { XMLParser } from "fast-xml-parser";
 import { createClient } from "@supabase/supabase-js";
+import { guardPublicApi } from "@/lib/server/publicApiGuard";
 
 /* ==========================================================================
    ROUTE CONFIG
