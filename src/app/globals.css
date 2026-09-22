@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+/* =========
+   Base: force black app
+   ========= */
+
+:root {
+  /* Vi kör SportMonitor som “dark-only” för att slippa iOS light-mode glitchar */
+  --background: #000000;
+  --foreground: #ededed;
+
+  --sm-bg: #000000;
+  --sm-panel: rgba(17, 24, 39, 0.52);
+  --sm-border: rgba(148, 163, 184, 0.20);
+
+  --sm-text-dim: rgba(226, 232, 240, 0.65);
+  --sm-yellow: #f5ec42;
+  --sm-blue: #3aa0ff;
+  --sm-green: #1e3a1a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Viktigt: html + body måste vara svarta, annars får du “vit ram” på mobil */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: #000000;
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========
+   SportMonitor shell
+   ========= */
+
+.sm-bg {
+  background: #000000;
+}
+
+.sm-shell {
+  min-height: 100vh;
+  color: rgba(241, 245, 249, 0.92);
+}
+
+.sm-panel {
+  background: var(--sm-panel);
+  border: 1px solid var(--sm-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.sm-divider {
+  border-color: var(--sm-border);
+}
+
+.sm-dim {
+  color: var(--sm-text-dim);
+}
+
+.sm-glow {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* =========
+   TopHighlight sport backgrounds
+   ========= */
+
+.sm-highlight-football {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.75)),
+    var(--sm-panel);
+
+  border: 1px solid var(--sm-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.sm-highlight-hockey {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.80)),
+    var(--sm-panel);
+
+  border: 1px solid var(--sm-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* =========
+   Header / Topbar
+   ========= */
+
+.sm-header {
+  width: 100%;
+  background: #000000;
+  padding: 0;
+}
+
+.sm-header-inner {
+  width: 100%;
+  overflow: hidden;
+}
+
+.sm-header-image-wrap {
+  width: 100%;
+  overflow: hidden;
+  max-height: 190px;
+}
+
+.sm-header-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: none !important;
+}
+
+/* Tablet / mindre desktop */
+@media (max-width: 1200px) {
+  .sm-header-image-wrap {
+    max-height: 165px;
+  }
+}
+
+/* Mobil */
+@media (max-width: 640px) {
+  .sm-header-image-wrap {
+    max-height: 108px;
+  }
+}

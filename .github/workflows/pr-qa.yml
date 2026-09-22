@@ -1,0 +1,44 @@
+name: PR QA
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key-for-build-only
+      SUPABASE_SERVICE_ROLE_KEY: sb_secret_placeholder_build_only_1234567890
+      CRON_SECRET: placeholder-cron-secret
+      INGEST_SECRET: placeholder-ingest-secret
+      FAVORITE_AUDIT_SECRET: placeholder-favorite-audit-secret
+      VAPID_PUBLIC_KEY: placeholder-vapid-public
+      VAPID_PRIVATE_KEY: placeholder-vapid-private
+      VAPID_SUBJECT: mailto:qa@example.com
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: placeholder-vapid-public
+      TOP_RSS_URL: https://example.com/feed.xml
+      TOP_MAX_AGE_HOURS: "24"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
