@@ -114,11 +114,11 @@ export default function ClientTopDropper() {
     <div className="w-full pt-1 sm:pt-2">
       <div className="-mx-4 flex justify-center sm:mx-0">
         <img
-          src="/logo-sportmonitor.png"
+          src="/og.png"
           alt="SportMonitor"
-          width={2172}
-          height={724}
-          className="h-auto w-[96vw] max-w-none sm:w-auto sm:max-w-[460px] md:max-w-[560px]"
+          width={1200}
+          height={400}
+          className="aspect-[3/1] w-[96vw] max-w-none object-cover sm:w-auto sm:max-w-[460px] md:max-w-[560px]"
         />
       </div>
 
