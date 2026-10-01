@@ -45,6 +45,14 @@ type FavoriteListRow = {
   entities: EntityLookupRow | EntityLookupRow[] | null;
 };
 
+type FavoriteSportRow = {
+  entity_id: string;
+  entities:
+    | Pick<EntityLookupRow, "sport">
+    | Array<Pick<EntityLookupRow, "sport">>
+    | null;
+};
+
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Unknown server error";
 }
@@ -206,6 +214,19 @@ export function shouldClearAllFavorites(req: Request): boolean {
   return url.searchParams.get("all") === "1";
 }
 
+export function countFavoritesForSport(
+  rows: FavoriteSportRow[],
+  sport: Sport,
+): number {
+  return rows.filter((row) => {
+    const entity = Array.isArray(row.entities)
+      ? row.entities[0] ?? null
+      : row.entities;
+
+    return entity?.sport === sport;
+  }).length;
+}
+
 /* ==========================================================================
    GET
    ========================================================================== */
@@ -311,11 +332,31 @@ export async function POST(req: Request) {
 
     const supabase = supabaseService();
 
+    const { data: targetEntity, error: targetEntityError } = await supabase
+      .from("entities")
+      .select("sport")
+      .eq("id", resolved.entityId)
+      .maybeSingle();
+
+    const targetSport = targetEntity?.sport;
+
+    if (
+      targetEntityError ||
+      !isFavoriteLookupSport(
+        typeof targetSport === "string" ? targetSport : undefined,
+      )
+    ) {
+      return NextResponse.json(
+        { ok: false, error: "Hittade inte favoriten i databasen" },
+        { status: 404 },
+      );
+    }
+
     const { data: existingFavorites, error: existingError } = await supabase
       .from("user_favorites")
-      .select("entity_id")
+      .select("entity_id,entities(sport)")
       .eq("device_id", validated.deviceId)
-      .limit(MAX_FAVORITES + 1);
+      .returns<FavoriteSportRow[]>();
 
     if (existingError) {
       throw existingError;
@@ -325,9 +366,17 @@ export async function POST(req: Request) {
       (row) => row.entity_id === resolved.entityId,
     );
 
-    if (!alreadyExists && (existingFavorites?.length ?? 0) >= MAX_FAVORITES) {
+    const sameSportFavoriteCount = countFavoritesForSport(
+      existingFavorites ?? [],
+      targetSport,
+    );
+
+    if (!alreadyExists && sameSportFavoriteCount >= MAX_FAVORITES) {
       return NextResponse.json(
-        { ok: false, error: `Max ${MAX_FAVORITES} favoriter` },
+        {
+          ok: false,
+          error: `Max ${MAX_FAVORITES} favoriter per sport`,
+        },
         { status: 409 },
       );
     }
