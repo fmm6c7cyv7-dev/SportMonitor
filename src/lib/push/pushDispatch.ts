@@ -95,6 +95,8 @@ export async function dispatchPushForNewsItem(newsItemId: string) {
      ======================================================================== */
 
   let sent = 0;
+  let failed = 0;
+  let disabled = 0;
   const successfulPushes: PushDeliveryInsertRow[] = [];
 
   for (const subscription of subscriptions) {
@@ -153,6 +155,16 @@ export async function dispatchPushForNewsItem(newsItemId: string) {
           .from("push_subscriptions")
           .update({ enabled: false })
           .eq("id", subscription.id);
+
+        disabled += 1;
+      } else {
+        failed += 1;
+        console.error("[push/dispatch] delivery failed", {
+          newsItemId: news.id,
+          deviceId: subscription.device_id,
+          statusCode: pushError?.statusCode ?? null,
+          message: error instanceof Error ? error.message : "Unknown push error",
+        });
       }
     }
   }
@@ -170,5 +182,11 @@ export async function dispatchPushForNewsItem(newsItemId: string) {
       .eq("id", newsItemId);
   }
 
-  return { ok: true, sent };
+  return {
+    ok: failed === 0,
+    sent,
+    failed,
+    disabled,
+    reason: failed > 0 ? "delivery_failed" : undefined,
+  };
 }
