@@ -80,6 +80,7 @@ export type FavoriteMatchMeta = {
   type: RankingEntityType;
   entity_id: string;
   entity_name: string;
+  matched_alias?: string | null;
 };
 
 export type FavoriteContextMeta = {

@@ -1,5 +1,6 @@
 // web/src/lib/pushServer.ts
 
+import { createECDH } from "node:crypto";
 import webpush from "web-push";
 
 /* ==========================================================================
@@ -30,22 +31,55 @@ type WebPushSubscription = Parameters<typeof webpush.sendNotification>[0];
 
 let vapidConfigured = false;
 
+export function deriveVapidPublicKey(privateKey: string): string {
+  const ecdh = createECDH("prime256v1");
+  ecdh.setPrivateKey(Buffer.from(privateKey, "base64url"));
+  return ecdh.getPublicKey(undefined, "uncompressed").toString("base64url");
+}
+
 function ensureVapidConfigured(): void {
   if (vapidConfigured) {
     return;
   }
 
-  const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
-  const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
-  const vapidSubject = process.env.VAPID_SUBJECT;
+  const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY?.trim();
+  const configuredServerPublicKey = process.env.VAPID_PUBLIC_KEY?.trim();
+  const configuredClientPublicKey =
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
+  const vapidSubject =
+    process.env.VAPID_SUBJECT?.trim() || "https://sportmonitor.se";
 
-  if (!vapidPublicKey || !vapidPrivateKey || !vapidSubject) {
+  if (!vapidPrivateKey) {
+    throw new Error("Missing VAPID env var: VAPID_PRIVATE_KEY.");
+  }
+
+  let derivedPublicKey: string;
+
+  try {
+    derivedPublicKey = deriveVapidPublicKey(vapidPrivateKey);
+  } catch {
+    throw new Error("Invalid VAPID_PRIVATE_KEY.");
+  }
+
+  if (
+    configuredClientPublicKey &&
+    configuredClientPublicKey !== derivedPublicKey
+  ) {
     throw new Error(
-      "Missing VAPID env vars: Ensure VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, and VAPID_SUBJECT are set.",
+      "VAPID key mismatch: NEXT_PUBLIC_VAPID_PUBLIC_KEY does not match VAPID_PRIVATE_KEY.",
     );
   }
 
-  webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+  if (
+    configuredServerPublicKey &&
+    configuredServerPublicKey !== derivedPublicKey
+  ) {
+    console.warn(
+      "[push] VAPID_PUBLIC_KEY does not match VAPID_PRIVATE_KEY; using the public key derived from the private key.",
+    );
+  }
+
+  webpush.setVapidDetails(vapidSubject, derivedPublicKey, vapidPrivateKey);
   vapidConfigured = true;
 }
 

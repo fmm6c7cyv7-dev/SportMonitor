@@ -354,14 +354,19 @@ function isDirectFavoriteSupportedByPresentation(
   normalizedTitle: string,
   tags: string[] | null | undefined,
   articleEntities: NonNullable<AcceptedItem["entities"]>,
+  matchedAlias?: string | null,
 ): boolean {
   const tokens = buildDirectFavoriteSupportTokens(directMeta);
 
-  const matched = tokens.some((token) =>
+  const canonicalMatch = tokens.some((token) =>
     isFavoriteMatch(normalizedTitle, tags, [token]),
   );
+  const detectedAliasMatch =
+    typeof matchedAlias === "string" &&
+    normalizeToken(matchedAlias).length > 0 &&
+    isFavoriteMatch(normalizedTitle, tags, [matchedAlias]);
 
-  if (!matched) return false;
+  if (!canonicalMatch && !detectedAliasMatch) return false;
 
   return !hasConflictingPlayerSurnameEntity(
     directMeta,
@@ -430,6 +435,7 @@ export function buildAcceptedItem(args: {
           normalizedTitle,
           item.tags ?? null,
           articleEntities,
+          rawEntityFavoriteMeta.matched_alias,
         )
         ? rawEntityFavoriteMeta
         : undefined

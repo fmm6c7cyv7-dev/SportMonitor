@@ -151,6 +151,59 @@ describe("direct favorite vs related context", () => {
     expect(result.favorite_context).toBe(false);
     expect(result.favorite_context_score).toBe(0);
   });
+  it("keeps Leksands IF as a direct favorite when the detected alias appears in the title", () => {
+    const leksandId = "team-leksands-if";
+    const item: DbItem = {
+      id: "leksand-direct",
+      sport: "hockey",
+      title: "Därför bytte inte Leksand målvakt - trots raset",
+      url: "https://example.com/leksand-direct",
+      source: "HockeyNews.se",
+      published_at: "2026-10-01T04:00:09.000Z",
+      tags: [],
+      priority: 80,
+    };
+
+    const result = buildAcceptedItem({
+      item,
+      allFavoriteTokens: [],
+      favoriteMatchByNewsId: new Map([
+        [
+          "leksand-direct",
+          {
+            score: 200,
+            type: "team",
+            entity_id: leksandId,
+            entity_name: "Leksands IF",
+            matched_alias: "leksand",
+          },
+        ],
+      ]),
+      favoriteContextByNewsId: new Map(),
+      directFavoriteEntityMetaById: new Map([
+        [
+          leksandId,
+          {
+            id: leksandId,
+            type: "team",
+            name: "Leksands IF",
+          },
+        ],
+      ]),
+      newsEntityIdsByNewsId: new Map([
+        ["leksand-direct", [leksandId]],
+      ]),
+      newsEntitiesByNewsId: new Map(),
+      geoActiveRegion: null,
+      normalizedTitle: "därför bytte inte leksand målvakt trots raset",
+    });
+
+    expect(result.favorite_match).toBe(true);
+    expect(result.isFavorite).toBe(true);
+    expect(result.favorite_entity_name).toBe("Leksands IF");
+    expect(result.favorite_match_mode).toBe("entity");
+  });
+
   it("does not badge Manchester United on an Arsenal story from polluted news_entities", () => {
     const manUtdId = "team-manchester-united";
     const result = buildAcceptedItem({

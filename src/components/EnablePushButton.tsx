@@ -92,7 +92,8 @@ export default function EnablePushButton() {
         // så klient- och serverläge självläker utan att användaren behöver
         // stänga av/på push manuellt.
         if (isEnabled && subscription) {
-          await registerSubscription(subscription);
+          const currentSubscription = await subscribeToPush();
+          await registerSubscription(currentSubscription);
         }
 
         setError(null);

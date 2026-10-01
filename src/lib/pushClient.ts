@@ -35,6 +35,26 @@ function urlBase64ToArrayBuffer(base64String: string): ArrayBuffer {
   return bytes.buffer.slice(0);
 }
 
+export function applicationServerKeysMatch(
+  existingKey: ArrayBuffer,
+  expectedKey: ArrayBuffer,
+): boolean {
+  const existingBytes = new Uint8Array(existingKey);
+  const expectedBytes = new Uint8Array(expectedKey);
+
+  if (existingBytes.length !== expectedBytes.length) {
+    return false;
+  }
+
+  for (let index = 0; index < existingBytes.length; index += 1) {
+    if (existingBytes[index] !== expectedBytes[index]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 /* ==========================================================================
    SUPPORT HELPERS
    ========================================================================== */
@@ -195,12 +215,6 @@ export async function subscribeToPush(): Promise<PushSubscription> {
   }
 
   const registration = await registerServiceWorker();
-  const existingSubscription = await registration.pushManager.getSubscription();
-
-  if (existingSubscription) {
-    return existingSubscription;
-  }
-
   const vapidPublicKey = getPushSupportSnapshot().vapidPublicKey;
 
   if (!vapidPublicKey) {
@@ -208,6 +222,28 @@ export async function subscribeToPush(): Promise<PushSubscription> {
   }
 
   const applicationServerKey = urlBase64ToArrayBuffer(vapidPublicKey);
+  const existingSubscription = await registration.pushManager.getSubscription();
+
+  if (existingSubscription) {
+    const existingApplicationServerKey =
+      existingSubscription.options?.applicationServerKey ?? null;
+
+    if (
+      existingApplicationServerKey === null ||
+      applicationServerKeysMatch(
+        existingApplicationServerKey,
+        applicationServerKey,
+      )
+    ) {
+      return existingSubscription;
+    }
+
+    const unsubscribed = await existingSubscription.unsubscribe();
+
+    if (!unsubscribed) {
+      throw new Error("Befintlig push-prenumeration kunde inte förnyas.");
+    }
+  }
 
   const subscription = await registration.pushManager.subscribe({
     userVisibleOnly: true,

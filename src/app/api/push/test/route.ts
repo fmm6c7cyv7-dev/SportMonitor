@@ -82,6 +82,8 @@ export async function POST(req: Request) {
 
     let sent = 0;
     let disabled = 0;
+    let failed = 0;
+    let lastError: string | null = null;
 
     for (const subscription of subscriptions) {
       try {
@@ -117,15 +119,20 @@ export async function POST(req: Request) {
 
           disabled += 1;
         } else {
+          failed += 1;
+          lastError =
+            error instanceof Error ? error.message : "Unknown push send error";
           console.error("[push/test] send error:", error);
         }
       }
     }
 
     return NextResponse.json({
-      ok: true,
+      ok: failed === 0,
       sent,
       disabled,
+      failed,
+      error: lastError,
     });
   } catch (error: unknown) {
     return NextResponse.json(
