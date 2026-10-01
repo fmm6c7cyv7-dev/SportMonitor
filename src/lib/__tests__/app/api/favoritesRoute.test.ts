@@ -9,6 +9,7 @@ vi.mock("@/lib/supabase", () => {
 });
 
 import {
+  countFavoritesForSport,
   getDeviceIdFromRequest,
   isFavoriteLookupSport,
   isFavoriteLookupType,
@@ -66,6 +67,20 @@ describe("favorites route helpers", () => {
     );
 
     expect(picked?.id).toBe("10");
+  });
+
+  it("counts the favorite limit per sport, not globally", () => {
+    const rows = [
+      { entity_id: "f1", entities: { sport: "football" as const } },
+      { entity_id: "f2", entities: { sport: "football" as const } },
+      { entity_id: "f3", entities: { sport: "football" as const } },
+      { entity_id: "h1", entities: { sport: "hockey" as const } },
+      { entity_id: "h2", entities: [{ sport: "hockey" as const }] },
+      { entity_id: "missing", entities: null },
+    ];
+
+    expect(countFavoritesForSport(rows, "football")).toBe(3);
+    expect(countFavoritesForSport(rows, "hockey")).toBe(2);
   });
 
   it("reads device_id from request query", () => {
