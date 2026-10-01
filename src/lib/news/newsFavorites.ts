@@ -1031,6 +1031,7 @@ export async function loadFavoriteExpansion(
           type: meta.type,
           entity_id: meta.id,
           entity_name: meta.name,
+          matched_alias: row.matched_alias ?? null,
         };
 
         const existing = favoriteMatchByNewsId.get(row.news_item_id);
