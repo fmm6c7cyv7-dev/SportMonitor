@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  applicationServerKeysMatch,
   getPushSubscriptionSupportError,
   getServiceWorkerSupportError,
   normalizePushError,
@@ -20,6 +21,22 @@ function createSnapshot(
     ...overrides,
   };
 }
+
+describe("pushClient VAPID helpers", () => {
+  it("recognizes the same application server key", () => {
+    const left = new Uint8Array([4, 10, 20, 30]).buffer;
+    const right = new Uint8Array([4, 10, 20, 30]).buffer;
+
+    expect(applicationServerKeysMatch(left, right)).toBe(true);
+  });
+
+  it("rejects a stale application server key", () => {
+    const current = new Uint8Array([4, 10, 20, 30]).buffer;
+    const stale = new Uint8Array([4, 10, 20, 31]).buffer;
+
+    expect(applicationServerKeysMatch(stale, current)).toBe(false);
+  });
+});
 
 describe("pushClient support helpers", () => {
   it("returns secure context error when https is missing", () => {
