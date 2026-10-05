@@ -104,6 +104,11 @@ const WOMENS_SPORT_KEYWORDS = [
   "feminine",
 ] as const;
 
+// Verified full identities only; never infer scope from a first name.
+// AIK identifies Nova Selin as a damlag player:
+// https://www.aikfotboll.se/spelare/2025-dam-nova-selin
+const VERIFIED_WOMENS_FOOTBALL_ENTITIES = ["nova selin"] as const;
+
 /* ==========================================================================
    NORMALIZATION
    ========================================================================== */
@@ -147,6 +152,18 @@ export function isWomensSportContent(text: string): boolean {
     return true;
   }
 
+  if (
+    /\b(aik|fotboll|football)\b/u.test(normalizedText) &&
+    VERIFIED_WOMENS_FOOTBALL_ENTITIES.some((name) => {
+      const pattern = name.split(" ").join("[\\s-]+");
+      return new RegExp(`(?:^|[^a-z0-9])${pattern}(?=$|[^a-z0-9])`, "u").test(
+        normalizedText,
+      );
+    })
+  ) {
+    return true;
+  }
+
   // Svenska könsmarkörer som egna ord. Detta undviker t.ex. "Damian".
   if (/\b(dam|damer|kvinna|kvinnor|kvinnlig|kvinnliga)\b/i.test(normalizedText)) {
     return true;
@@ -180,5 +197,24 @@ export function isIrrelevantSport(text: string): boolean {
 
   return OTHER_SPORT_KEYWORDS.some((keyword) =>
     containsNormalizedKeyword(normalizedText, keyword),
+  );
+}
+
+/** Shared read/dispatch guard also protects against rows already stored. */
+export function isMensScopeArticle(article: {
+  title?: string | null;
+  url?: string | null;
+  summary?: string | null;
+  tags?: unknown;
+  source?: string | null;
+  sport?: string | null;
+}): boolean {
+  const tags = Array.isArray(article.tags)
+    ? article.tags.filter((tag): tag is string => typeof tag === "string")
+    : [];
+  return !isWomensSportContent(
+    [article.title, article.url, article.summary, ...tags, article.source, article.sport]
+      .filter(Boolean)
+      .join(" "),
   );
 }

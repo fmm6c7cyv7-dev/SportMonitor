@@ -1,5 +1,6 @@
 // src/lib/feed/newsFeedRequest.ts
 
+import { isMensScopeArticle } from "@/lib/ingest/filterPolicy";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { supabaseService } from "@/lib/supabase";
@@ -845,6 +846,8 @@ export async function handleNewsFeedRequest(req: NextRequest) {
     );
 
     items = filterCandidatesBySportConsistency(items, safeSport) as DbItem[];
+
+    items = items.filter(isMensScopeArticle);
 
     const newsEntityContext = await loadNewsEntityContext(supabase, items);
     const newsEntityIdsByNewsId = newsEntityContext.entityIdsByNewsId;

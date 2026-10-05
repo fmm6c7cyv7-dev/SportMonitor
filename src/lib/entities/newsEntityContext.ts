@@ -157,7 +157,6 @@ export function toRankingEntity(
     nationality: isSwedish && (row.type === "player" || row.type === "staff")
       ? "Sweden"
       : undefined,
-    gender: row.type === "player" || row.type === "staff" ? "male" : undefined,
     country:
       isSwedish && (row.type === "team" || row.type === "league")
         ? "Sweden"

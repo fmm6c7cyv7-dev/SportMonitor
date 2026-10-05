@@ -1,12 +1,15 @@
 // src/lib/__tests__/ingest/filterPolicy.test.ts
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   isIrrelevantSport,
+  isMensScopeArticle,
   isWomensSportContent,
   normalizeFilterText,
 } from "@/lib/ingest/filterPolicy";
 import { buildDetectionText } from "@/lib/ingest/processFeed";
+
+vi.mock("@/lib/supabase", () => ({ supabaseService: vi.fn() }));
 
 describe("ingest filter policy — men's football/hockey scope", () => {
   it.each([
@@ -103,5 +106,43 @@ describe("ingest filter policy — men's football/hockey scope", () => {
         "Premier League: Liverpool och Arsenal gör upp om serieledningen",
       ),
     ).toBe(false);
+  });
+});
+
+describe("verified identity and stored men's scope", () => {
+  it("blocks the reported AIK title without explicit women's keywords", () => {
+    const title = "AIK:s stjärnskott Nova Selin visar upp unika planerna";
+    expect(isWomensSportContent(title)).toBe(true);
+    expect(isIrrelevantSport(title)).toBe(true);
+    expect(isMensScopeArticle({ title, sport: "football" })).toBe(false);
+  });
+
+  it("uses sport metadata and URL-only full identities", () => {
+    expect(isMensScopeArticle({ title: "Stjärnskottet visar planerna", sport: "football",
+      url: "https://example.com/nova-selin-visar-planerna" })).toBe(false);
+    expect(isMensScopeArticle({ title: "Nova Selin visar planerna", sport: "football" })).toBe(false);
+  });
+
+  it.each([
+    "AIK:s Nova visar planerna",
+    "AIK värvar Eric Smith",
+    "AIK:s Nova Selinsson visar planerna",
+    "AIK:s Annanova Selin visar planerna",
+    "Magnus Erikssons startelva mot AIK",
+  ])("does not infer gender from first names or partial identities: %s", (title) => {
+    expect(isMensScopeArticle({ title, sport: "football" })).toBe(true);
+  });
+
+  it("does not infer a football identity without sport context", () => {
+    expect(isWomensSportContent("Nova Selin visar planerna")).toBe(false);
+  });
+
+  it.each([
+    { summary: "Chelsea Women's first team" },
+    { tags: ["SDHL"] },
+    { source: "Women's Football Weekly" },
+    { url: "https://example.com/damallsvenskan/nyhet" },
+  ])("guards stored metadata before read/push personalization: %j", (metadata) => {
+    expect(isMensScopeArticle({ title: "Ny klubb klar", sport: "football", ...metadata })).toBe(false);
   });
 });
