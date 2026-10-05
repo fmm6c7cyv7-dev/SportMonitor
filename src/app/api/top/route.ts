@@ -1,5 +1,6 @@
 // src/app/api/top/route.ts
 
+import { isMensScopeArticle } from "@/lib/ingest/filterPolicy";
 import { NextResponse } from "next/server";
 import { XMLParser } from "fast-xml-parser";
 import { createClient } from "@supabase/supabase-js";
@@ -18,6 +19,8 @@ export const revalidate = 0;
 
 type RssItem = {
   title?: string;
+  description?: string;
+  category?: string | string[];
   link?: string;
   pubDate?: string;
   source?: { "#text"?: string } | string;
@@ -248,13 +251,14 @@ async function fallbackFromDb() {
     .from("news_items")
     .select("id,sport,title,url,source,published_at,fetched_at,tags")
     .order("published_at", { ascending: false })
-    .limit(1);
+    .limit(30);
 
   if (error || !data?.length) {
     return null;
   }
 
-  const row = data[0] as FallbackNewsRow;
+  const row = (data as FallbackNewsRow[]).find(isMensScopeArticle);
+  if (!row) return null;
 
   return {
     ...row,
@@ -360,7 +364,14 @@ export async function GET(req: Request) {
 
     const freshItems = items.filter((item) => {
       const age = ageHours(item.pubDate);
-      return age != null && age <= TOP_MAX_AGE_HOURS;
+      return age != null && age <= TOP_MAX_AGE_HOURS && isMensScopeArticle({
+        title: stripCdata(String(item.title ?? "")),
+        url: String(item.link ?? ""),
+        summary: String(item.description ?? ""),
+        tags: Array.isArray(item.category) ? item.category : [item.category ?? ""],
+        source: typeof item.source === "string" ? item.source : item.source?.["#text"],
+        sport: detectSport(getText(item)),
+      });
     });
 
     if (!freshItems.length) {

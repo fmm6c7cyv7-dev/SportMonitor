@@ -171,3 +171,25 @@ describe("pushAudience", () => {
     ]);
   });
 });
+
+describe("push women's scope guard", () => {
+  it.each([
+    "AIK:s stjärnskott Nova Selin visar upp unika planerna",
+    "KLART: Nova Selin skriver kontrakt med AIK",
+    "KLART: AIK värvar i Damallsvenskan",
+  ])("blocks even favorite-linked and VIP eligible articles: %s", async (title) => {
+    const supabase = fakeSupabase({
+      news_items: [{ id: "women-1", title, sport: "football", tags: [], fetched_at: "2026-10-05T06:00:00Z" }],
+      entities: [{ id: "aik", name: "AIK", type: "team" }],
+      news_entities: [{ news_item_id: "women-1", entity_id: "aik" }],
+      user_favorites: [{ device_id: "device-aik", entity_id: "aik" }],
+      push_subscriptions: [{ id: "sub-aik", device_id: "device-aik", enabled: true }],
+    });
+    const result = await evaluatePushAudienceForNewsItem(supabase as never, "women-1");
+    expect(result.news).not.toBeNull();
+    expect(result.newsSport).toBeNull();
+    expect(result.isVipNews).toBe(false);
+    expect(result.matchedDevices).toEqual([]);
+    expect(result.subscriptions).toEqual([]);
+  });
+});

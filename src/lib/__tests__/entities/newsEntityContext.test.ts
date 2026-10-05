@@ -133,3 +133,10 @@ describe("newsEntityContext", () => {
     });
   });
 });
+
+it("does not invent gender for an unverified player or staff entity", () => {
+  for (const type of ["player", "staff"] as const) {
+    const entity = row("unknown", "football", type, "Unknown person");
+    expect(toRankingEntity(entity, new Map([[entity.id, entity]])).gender).toBeUndefined();
+  }
+});

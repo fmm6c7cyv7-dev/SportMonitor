@@ -1,3 +1,4 @@
+import { isMensScopeArticle } from "@/lib/ingest/filterPolicy";
 import {
   buildNewsSearchText,
   favoriteMatchesNews,
@@ -51,6 +52,17 @@ export async function evaluatePushAudienceForNewsItem(
   if (newsError || !news) {
     return {
       news: null,
+      newsSport: null,
+      isVipNews: false,
+      subscriptions: [],
+      matchedDevices: [],
+    };
+  }
+
+  // Gate before VIP and favorite matching, including already persisted rows.
+  if (!isMensScopeArticle(news)) {
+    return {
+      news,
       newsSport: null,
       isVipNews: false,
       subscriptions: [],
