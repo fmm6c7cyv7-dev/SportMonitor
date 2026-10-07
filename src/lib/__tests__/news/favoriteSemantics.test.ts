@@ -204,6 +204,52 @@ describe("direct favorite vs related context", () => {
     expect(result.favorite_match_mode).toBe("entity");
   });
 
+  it("keeps canonical aliases when the direct favorite uses the production DB entity id", () => {
+    const productionLeksandId = "934ca6b6-6877-5718-bbd6-0190faaa0610";
+
+    for (const title of [
+      "Polarnas osannolika poängkväll – i Leksands utklassning",
+      "FEM PUNKTER: Storstjärnan borta - inga problem för LIF",
+      "Ungdomarna ledde Leksand till ny seger",
+    ]) {
+      const result = buildAcceptedItem({
+        item: {
+          id: `prod-db-leksand-${title}`,
+          sport: "hockey",
+          title,
+          url: "https://example.com/prod-db-leksand",
+          source: "HockeyNews – HockeyAllsvenskan",
+          published_at: "2026-10-07T21:30:05.000Z",
+          tags: [],
+          priority: 0,
+        },
+        allFavoriteTokens: [],
+        favoriteMatchByNewsId: new Map(),
+        favoriteContextByNewsId: new Map(),
+        directFavoriteEntityMetaById: new Map([
+          [
+            productionLeksandId,
+            {
+              id: productionLeksandId,
+              type: "team",
+              name: "Leksands IF",
+              league_id: "965c6b5b-5e03-5ffe-923e-30e4ee89f54b",
+            },
+          ],
+        ]),
+        newsEntityIdsByNewsId: new Map(),
+        newsEntitiesByNewsId: new Map(),
+        geoActiveRegion: null,
+        normalizedTitle: title.toLowerCase(),
+      });
+
+      expect(result.favorite_match).toBe(true);
+      expect(result.favorite_entity_id).toBe(productionLeksandId);
+      expect(result.favorite_entity_name).toBe("Leksands IF");
+      expect(result.favorite_match_mode).toBe("entity");
+    }
+  });
+
   it.each([
     "Ungdomarna ledde Leksand till ny seger",
     "Här firar han som Viktor Gyökeres – i Leksands överkörning",
