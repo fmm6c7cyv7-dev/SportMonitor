@@ -268,6 +268,30 @@ function getBrowseSeed(entityId: string): BrowseSeed | undefined {
   return BROWSE_SEED_BY_ID.get(entityId);
 }
 
+function getBrowseSeedsForMeta(meta: EntityMetaRow): BrowseSeed[] {
+  const exact = getBrowseSeed(meta.id);
+  if (exact) {
+    return [exact];
+  }
+
+  const normalizedName = normalizeToken(meta.name);
+  if (!normalizedName) {
+    return [];
+  }
+
+  return Array.from(BROWSE_SEED_BY_ID.values()).filter(
+    (seed) =>
+      seed.type === meta.type &&
+      normalizeToken(seed.name) === normalizedName,
+  );
+}
+
+function buildSwedishPossessiveTeamTokens(tokens: string[]): string[] {
+  return tokens
+    .filter((token) => token.length >= 4 && !token.endsWith("s"))
+    .map((token) => `${token}s`);
+}
+
 function createEntityMetaFromSeed(seed: BrowseSeed): EntityMetaRow {
   return {
     id: seed.id,
@@ -335,11 +359,23 @@ function buildEntityTokenFallbacks(meta: EntityMetaRow): string[] {
   if (meta.type === "team") {
     const aliases = TEAM_ALIASES[meta.name] || [];
     const derivedAliases = buildDerivedTeamAliases(meta.name);
-    const browseAliases = getBrowseSeed(meta.id)?.aliases ?? [];
+    const browseAliases = getBrowseSeedsForMeta(meta).flatMap(
+      (seed) => seed.aliases,
+    );
 
     pushUnique(tokens, aliases);
     pushUnique(tokens, derivedAliases);
     pushUnique(tokens, browseAliases);
+
+    // Swedish headlines commonly use the possessive club form ("Leksands",
+    // "Djurgårdens"). Treat it as a deterministic lexical variant of a
+    // canonical team token rather than requiring a second entity row.
+    pushUnique(
+      tokens,
+      buildSwedishPossessiveTeamTokens(
+        getUniqueNormalizedTokens([meta.name, ...derivedAliases, ...browseAliases]),
+      ),
+    );
   }
 
   if (meta.type === "league") {
