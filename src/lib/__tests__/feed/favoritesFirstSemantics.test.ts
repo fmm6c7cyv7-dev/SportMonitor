@@ -186,19 +186,14 @@ describe("favorites-first semantic invariants", () => {
     expect(merged.favorite_entity_name).toBe("Alexander Isak");
   });
 
-  it("does not create favorite metadata when no AcceptedItem exists", () => {
-    const [merged] = mergeRankedArticlesIntoAccepted(
+  it("does not emit an unvalidated ranked candidate as an unmarked article", () => {
+    const merged = mergeRankedArticlesIntoAccepted(
       [],
       [rankedArticle("ranked-only", true)],
       "football",
     );
 
-    expect(merged.favorite_match).toBe(false);
-    expect(merged.isFavorite).toBe(false);
-    expect(merged.favorite_score).toBe(0);
-    expect(merged.favorite_match_mode).toBe("none");
-    expect(merged.favorite_entity_id).toBeNull();
-    expect(merged.favorite_entity_name).toBeNull();
+    expect(merged).toEqual([]);
   });
 
   it("uses validated direct/context decisions instead of polluted entity hits", () => {
