@@ -204,6 +204,89 @@ describe("direct favorite vs related context", () => {
     expect(result.favorite_match_mode).toBe("entity");
   });
 
+  it.each([
+    "Ungdomarna ledde Leksand till ny seger",
+    "Här firar han som Viktor Gyökeres – i Leksands överkörning",
+    "FEM PUNKTER: Storstjärnan borta - inga problem för LIF",
+    "Leksand krossade Nybro: Fruktansvärt dåligt",
+    "Leksand kör över Nybro Vikings",
+  ])("marks Leksands IF favorite from canonical team aliases: %s", (title) => {
+    const leksandId = "team-leksands-if";
+    const result = buildAcceptedItem({
+      item: {
+        id: `leksand-alias-${title}`,
+        sport: "hockey",
+        title,
+        url: "https://example.com/leksand-alias",
+        source: "Test Source",
+        published_at: "2026-10-07T20:00:00.000Z",
+        tags: [],
+        priority: 0,
+      },
+      allFavoriteTokens: [],
+      favoriteMatchByNewsId: new Map(),
+      favoriteContextByNewsId: new Map(),
+      directFavoriteEntityMetaById: new Map([
+        [
+          leksandId,
+          {
+            id: leksandId,
+            type: "team",
+            name: "Leksands IF",
+          },
+        ],
+      ]),
+      newsEntityIdsByNewsId: new Map(),
+      newsEntitiesByNewsId: new Map(),
+      geoActiveRegion: null,
+      normalizedTitle: title.toLowerCase(),
+    });
+
+    expect(result.favorite_match).toBe(true);
+    expect(result.isFavorite).toBe(true);
+    expect(result.favorite_entity_name).toBe("Leksands IF");
+    expect(result.favorite_match_mode).toBe("entity");
+  });
+
+  it.each([
+    {
+      id: "team-djurgardens-if",
+      name: "Djurgårdens IF",
+      title: "Djurgårdens stjärna avgjorde sent",
+    },
+    {
+      id: "team-vasteras-sk",
+      name: "Västerås SK",
+      title: "Västerås tog tre viktiga poäng",
+    },
+  ])("uses canonical aliases generically for $name", ({ id, name, title }) => {
+    const result = buildAcceptedItem({
+      item: {
+        id: `generic-team-${id}`,
+        sport: name === "Västerås SK" ? "football" : "hockey",
+        title,
+        url: "https://example.com/generic-team",
+        source: "Test Source",
+        published_at: "2026-10-07T20:00:00.000Z",
+        tags: [],
+        priority: 0,
+      },
+      allFavoriteTokens: [],
+      favoriteMatchByNewsId: new Map(),
+      favoriteContextByNewsId: new Map(),
+      directFavoriteEntityMetaById: new Map([
+        [id, { id, type: "team", name }],
+      ]),
+      newsEntityIdsByNewsId: new Map(),
+      newsEntitiesByNewsId: new Map(),
+      geoActiveRegion: null,
+      normalizedTitle: title.toLowerCase(),
+    });
+
+    expect(result.favorite_match).toBe(true);
+    expect(result.favorite_entity_name).toBe(name);
+  });
+
   it("does not badge Manchester United on an Arsenal story from polluted news_entities", () => {
     const manUtdId = "team-manchester-united";
     const result = buildAcceptedItem({
