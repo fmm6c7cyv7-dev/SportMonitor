@@ -26,44 +26,8 @@ export function mergeRankedArticlesIntoAccepted(
     const rankedLocalMatched = ranked.localSignal?.matched ?? false;
 
     if (!original) {
-      const editorialRelevance = classifyEditorialRelevance({
-        sport,
-        title: ranked.title,
-        source: ranked.source,
-        tags: ranked.tags ?? null,
-      });
-
-      merged.push({
-        id: ranked.id ?? null,
-        sport,
-        title: ranked.title,
-        url: ranked.url,
-        source: ranked.source,
-        published_at: ranked.publishedAt ?? "",
-        fetched_at: null,
-        tags: ranked.tags ?? null,
-        priority: ranked.priority ?? null,
-        isFavorite: false,
-        isLocal: rankedLocalMatched,
-        favorite_match: false,
-        favorite_score: 0,
-        favorite_match_mode: "none",
-        favorite_entity_type: null,
-        favorite_entity_id: null,
-        favorite_entity_name: null,
-        favorite_context: false,
-        favorite_context_score: 0,
-        hasSwedishPlayer:
-          editorialRelevance.hasSwedishPlayer ||
-          ranked.scoreComponents.swedishPlayer > 0,
-        isPremierOrAllsvenskan: false,
-        editorialTier: editorialRelevance.tier,
-        editorialReasons: editorialRelevance.reasons,
-        entities: null,
-        ranking_total: ranked.score,
-        is_local: rankedLocalMatched,
-      });
-
+      // A ranked candidate without its validated AcceptedItem has no reliable
+      // favorite metadata. Do not manufacture an unmarked article in the feed.
       continue;
     }
 
