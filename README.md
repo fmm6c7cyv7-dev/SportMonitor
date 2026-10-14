@@ -14,6 +14,10 @@ Målet är att samla relevanta sportnyheter på ett ställe och ge användaren e
 
 ---
 
+## Versioner och uppdateringar
+
+Följ [versions- och uppdateringspolicyn](docs/RELEASE_POLICY.md) vid varje release. Aktuell version hämtas från `package.json`; ändringar beskrivs i [changelog](docs/CHANGELOG.md).
+
 ## Översikt
 
 Projektet är byggt med:

@@ -52,3 +52,7 @@ Use the narrowest evidence that proves the changed risk:
 
 ## Completion
 A block is complete when scope is satisfied, relevant QA passes, the diff is clean, documentation is current, and accepted work is integrated into `main`. Remaining Human QA must be explicit.
+
+## Release policy
+
+Follow [docs/RELEASE_POLICY.md](docs/RELEASE_POLICY.md) for every release: update the package version, synchronized lockfile, Swedish first-open update notice and changelog.

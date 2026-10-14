@@ -98,3 +98,7 @@ Keep reports short:
 - Human QA if required;
 - blocker/residual risk;
 - commit SHA or PR when available.
+
+## Release policy
+
+Follow [docs/RELEASE_POLICY.md](../docs/RELEASE_POLICY.md) for every release: update the package version, synchronized lockfile, Swedish first-open update notice and changelog.

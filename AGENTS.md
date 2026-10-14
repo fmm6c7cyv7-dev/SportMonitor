@@ -16,3 +16,7 @@ Read `AI_WORKFLOW.md` and `.github/copilot-instructions.md` before autonomous im
 - Treat ranking, ingest, favorites, push, Supabase writes, schema/auth and deployment as regression-sensitive.
 - Never weaken tests/checks merely to obtain PASS.
 - Accepted work ends integrated into current `main`.
+
+## Release policy
+
+Follow [docs/RELEASE_POLICY.md](docs/RELEASE_POLICY.md) for every release: update the package version, synchronized lockfile, Swedish first-open update notice and changelog.
