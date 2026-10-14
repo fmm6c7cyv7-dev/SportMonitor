@@ -149,3 +149,25 @@ and never infers club match from source branding alone. Unit tests cover
 representative live RSS headlines. The sources **remain disabled** in
 the feed registry until cross-source duplicate and ranking simulation
 are completed. No source authority weights are changed.
+
+## LOCK — candidate source evaluation (2026-10-14)
+
+**Status: LOCKED, NOT ACTIVATED.** Both `The Stacey West` and `FeanOnline`
+remain excluded from active ingest registration. No source authority boost,
+ranking weight adjustment, VIP changes or push behavior modification is
+authorized by this audit. The revised club filter now requires club identity
+in headline or article URL path (not generic summary/tag text), with a
+hyphenated-URL regression fix. This passed PR #20 CI.
+
+**Known measured baseline (PR #19, BEFORE headline-only precision fix):**
+The Stacey West 5 retrieved / 3 eligible within 12 hours; FeanOnline 90
+retrieved / 5 eligible within 12 hours. These are **not** post-fix acceptance
+counts and must not be represented as such.
+
+**Remaining gates:** Repeat the authorized read-only live RSS test on the
+post-fix main revision, perform event-level duplicate and Swedish core top
+12/30 impact simulation, check mobile article access, and verify exact
+canonical entity associations. No source is to be activated automatically.
+
+This block is closed at the documentation/guardrail stage. Any activation
+requires a separate scoped PR with explicit QA and production approval.
