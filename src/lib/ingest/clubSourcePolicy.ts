@@ -20,6 +20,7 @@ export function isEligibleClubSourceArticle(source: string, item: ClubSourceArti
   const tags = (item.tags ?? []).map(normalizeFilterText).join(" ");
   const path = normalizeFilterText(new URL(item.url ?? "https://invalid.example").pathname);
   const all = [title, summary, tags, path].join(" ");
+  const primaryIdentity = [title, path.replace(/-/g, " ")].join(" ");
 
   // Never let commercial, women's or academy/mixed-scope articles through.
   if (isWomensSportContent(all) ||
@@ -28,10 +29,10 @@ export function isEligibleClubSourceArticle(source: string, item: ClubSourceArti
 
   if (source === "The Stacey West") {
     // Generic Lincolnshire non-league stories are not Lincoln City FC news.
-    return /\b(lincoln city|the imps|weareimps)\b/u.test(all);
+    return /\b(lincoln city|the imps|weareimps)\b/u.test(primaryIdentity);
   }
 
   // SC Heerenveen or a verified Swedish-player name in the club-specific feed.
   // Never infer the men's club solely from the source brand.
-  return /\b(sc heerenveen|heerenveen|marcus linday|linday)\b/u.test(all);
+  return /\b(sc heerenveen|heerenveen|marcus linday|linday)\b/u.test(primaryIdentity);
 }
