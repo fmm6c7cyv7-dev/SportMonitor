@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.3.6] - 2026-10-14
+
+### Rättat
+- Källbalanseringen arbetar nu över 30 artiklar i stället för enbart de första 15, med utökad lookahead och skydd för högst rankade artiklar.
+- Veckosammanställningar, rankinglistor och kommenterande succéstart-artiklar kan inte längre få SUCCÉ/VIP-prioritet av en för generös AI-bedömning.
+- Ingen ändring av flödesantal, åldersgräns, favoriter, deduplicering eller push.
+
 ## [6.3.5] - 2026-10-14
 
 ### Rättat
