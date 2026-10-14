@@ -40,3 +40,7 @@ Each ingest request shares a maximum of 40 model calls and 45 seconds of cumulat
 - Unit/integration tests cover misleading keywords, real positive events, spoofed source tags, title binding, malformed/ungrounded responses, HTTP errors, timeout, shared ranking/category/VIP behavior and pre-push ingest ordering/dedupe.
 - `SM_EDITORIAL_LIVE_QA=1 npm test -- src/lib/__tests__/editorial/live.test.ts --silent=false --reporter=verbose` opts into eight read-only real-model headline checks. This is skipped by default, requires Gateway authentication and makes no database writes or notifications.
 - Model quality is probabilistic; validate production summary counters and periodically review ambiguous headlines. Stored semantic decisions avoid different results between users or refreshes.
+
+## Succé
+
+The Swedish term `succé` (including inflected forms) nominates an article for the same AI-based VIP review as existing candidate terms. Confirmed, concrete exceptional sporting achievements can receive the `SUCCESS` badge, category `success`, VIP and normal editorial ranking priority. Predictions, promotional praise, speculation, ordinary victories and unclear claims do not qualify. VIP is strictly editorial and does not independently authorize push delivery.
