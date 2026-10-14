@@ -1,4 +1,5 @@
 import { createEditorialBudget } from "@/lib/editorial/classifier";
+import { backfillRecentEditorialAssessments } from "@/lib/editorial/backfill";
 // src/app/api/ingest/route.ts
 
 import { NextResponse } from "next/server";
@@ -31,7 +32,14 @@ export async function GET(req: Request) {
     pushSent: number;
   }> = [];
 
-  const editorialBudget = createEditorialBudget();
+  // Runtime OIDC is attached to the Vercel Function request headers.
+  const editorialBudget = createEditorialBudget(req.headers.get("x-vercel-oidc-token") ?? undefined);
+  let editorialBackfill: Awaited<ReturnType<typeof backfillRecentEditorialAssessments>> | null = null;
+  try {
+    editorialBackfill = await backfillRecentEditorialAssessments(supabase, editorialBudget);
+  } catch (error) {
+    console.error("[editorial] bounded backfill failed", error instanceof Error ? error.message : "unknown");
+  }
 
   for (const feed of FEEDS) {
     try {
@@ -57,6 +65,7 @@ export async function GET(req: Request) {
   return NextResponse.json({
     ok: true,
     editorial: editorialBudget.stats,
+    editorialBackfill,
     inserted: totalInserted,
     pushSent: totalPushSent,
     feedsProcessed: FEEDS.length,
