@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.3.5] - 2026-10-14
+
+### Rättat
+- Kandidater inom 0–6 timmar får nu konkurrera i den slutliga färskhetssorteringen innan flödet begränsas till 30 artiklar. Äldre men högt rankade artiklar ska inte tränga bort kvalificerade färska nyheter på grund av för tidig kapning.
+- Nyhetskolumnerna begär samma maxantal som backend faktiskt kan returnera: 30 artiklar per sport, varav 12 visas initialt. Ingen ändring av favorit-, VIP-, dedupe-, push- eller åldersgränser.
+
 ## [6.3.4] - 2026-10-14
 
 ### Rättat
