@@ -3,6 +3,11 @@ import packageJson from "../../package.json";
 export const RELEASE_VERSION = packageJson.version;
 export const WELCOME_STORAGE_KEY = "sm_seen_welcome";
 export const RELEASE_STORAGE_PREFIX = "sm_seen_release:";
+export function releaseNoticeKey(version: string): string {
+  const match = /^(\d+)\.(\d+)\.\d+$/.exec(version);
+  if (!match) throw new Error("Invalid app version");
+  return `${RELEASE_STORAGE_PREFIX}${match[1]}.${match[2]}`;
+}
 export type ReleaseNoticeMode = "hidden" | "welcome" | "update";
 
 type NoticeEnvironment = {
@@ -12,7 +17,9 @@ type NoticeEnvironment = {
 
 /** Persist only acknowledgement; memory prevents repeat dialogs if storage is blocked. */
 export function createReleaseNoticeStore(version: string, environment: NoticeEnvironment) {
-  const releaseKey = `${RELEASE_STORAGE_PREFIX}${version}`;
+  const releaseKey = releaseNoticeKey(version);
+  const [major, minor] = version.split(".");
+  const legacyKeys = Array.from({length: Number(version.split(".")[2]) + 1}, (_, patch) => `${RELEASE_STORAGE_PREFIX}${major}.${minor}.${patch}`);
   const acknowledged = new Set<string>();
   const listeners = new Set<() => void>();
   const seen = (key: string) => {
@@ -23,7 +30,7 @@ export function createReleaseNoticeStore(version: string, environment: NoticeEnv
   const emit = () => { for (const listener of listeners) listener(); };
   const snapshot = (): ReleaseNoticeMode => {
     if (!seen(WELCOME_STORAGE_KEY)) return "welcome";
-    return seen(releaseKey) ? "hidden" : "update";
+    return seen(releaseKey) || legacyKeys.some(seen) ? "hidden" : "update";
   };
   return {
     snapshot,
@@ -37,7 +44,7 @@ export function createReleaseNoticeStore(version: string, environment: NoticeEnv
     subscribe(listener: () => void) {
       listeners.add(listener);
       const unsubscribe = environment.listen((key) => {
-        if (key === null || key === WELCOME_STORAGE_KEY || key === releaseKey) emit();
+        if (key === null || key === WELCOME_STORAGE_KEY || key === releaseKey || legacyKeys.includes(key)) emit();
       });
       return () => { listeners.delete(listener); unsubscribe(); };
     },
