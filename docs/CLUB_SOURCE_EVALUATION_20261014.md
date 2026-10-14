@@ -137,3 +137,15 @@ classification, canonical entity linkage, duplicate-event simulation,
 mobile article accessibility and first-12/30 impact **NOT YET VERIFIED**.
 Do not activate either source in the production registry on RSS response
 alone. No source weights, favorites, VIP, push or app version changed.
+
+## Guard implementation pending source activation
+
+The dedicated source filter in `src/lib/ingest/clubSourcePolicy.ts`
+runs after age validation and before entity detection when the feed name
+is exactly 'The Stacey West' or 'FeanOnline'. It is intentionally
+conservative: must mention the actual club or a narrow verified
+player identity, must not be women's/academy or promotional,
+and never infers club match from source branding alone. Unit tests cover
+representative live RSS headlines. The sources **remain disabled** in
+the feed registry until cross-source duplicate and ranking simulation
+are completed. No source authority weights are changed.
