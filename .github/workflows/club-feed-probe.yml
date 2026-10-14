@@ -1,0 +1,20 @@
+name: Read-only club feed probe
+on:
+  pull_request:
+    paths:
+      - .github/workflows/club-feed-probe.yml
+      - scripts/club-feed-probe.mjs
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Read-only RSS validation
+        run: node scripts/club-feed-probe.mjs
