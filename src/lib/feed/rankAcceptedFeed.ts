@@ -185,7 +185,9 @@ export function rankAcceptedFeed(
       normalFeedAccepted,
       unreadPushedIds,
     ),
-    limit: input.limit,
+    // Rank all age-eligible candidates before the final freshness-bucket sort.
+    // Capping here lets an older high-scoring item consume a fresh article's slot.
+    limit: normalFeedAccepted.length,
   });
 
   const sortedWithin6h = sortRouteItemsHybrid(

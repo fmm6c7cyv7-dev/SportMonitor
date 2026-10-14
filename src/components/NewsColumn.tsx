@@ -505,7 +505,7 @@ export default function NewsColumn({
     try {
       const params = new URLSearchParams({
         sport,
-        limit: "40",
+        limit: "30",
       });
 
       const hasFavoritesActive = hasActiveFavorites(favorites);

@@ -42,6 +42,20 @@ Tier 3 must not crowd out Tier 1 merely because it is generic Premier League, Se
 
 ---
 
+## Feed capacity and presentation
+
+The current UI shows **12 items per sport column initially**, with an option to
+expand to the returned list. The news API permits at most **30 articles per
+sport/request** (20 by default when no limit is provided); the browser requests
+30, not 40. These values are current implementation limits, not a promise that
+every feed can always be filled to 30. Eligibility, deduplication, editorial
+relevance, men's scope and score floor still apply.
+
+**Do not truncate the scored 0–6 h candidate pool before route freshness-bucket
+ordering.** Rank all accepted age-eligible candidates, apply the final bucket
+ordering and article-limit only afterward. Otherwise highly scored 3–6 h
+fallback articles can consume slots needed for the 0–3 h fresh pool.
+
 ## Freshness discipline — non-regression rules
 
 Freshness is a guardrail around editorial relevance.

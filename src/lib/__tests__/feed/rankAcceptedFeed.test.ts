@@ -87,6 +87,43 @@ describe("balanceFavoriteDensity", () => {
 });
 
 describe("rankAcceptedFeed", () => {
+  it("uses the entire six-hour candidate pool before applying the final 30-item limit", () => {
+    const staleButStrong = Array.from({length: 40}, (_, index) =>
+      item("old-" + index, 230, {
+        title: "Swedish international player scores decisive goal number " + index,
+        source: "Strong source " + index,
+        priority: 100,
+        editorialTier: 1,
+        hasSwedishPlayer: true,
+      }),
+    );
+    const freshButLowerScored = item("fresh-low-score", 5, {
+      title: "Premier League club prepares for upcoming fixture",
+      source: "Current update",
+      priority: 30,
+      editorialTier: 3,
+      editorialReasons: [],
+      hasSwedishPlayer: false,
+    });
+    const result = rankAcceptedFeed({
+      accepted: [...staleButStrong, freshButLowerScored],
+      sport: "football", nowMs: NOW, hideRead: false, limit: 30,
+    });
+    expect(result).toHaveLength(30);
+    expect(new Set(result.map(article => article.id)).size).toBe(30);
+    expect(result.some(article => article.id === "fresh-low-score")).toBe(true);
+    expect(result[0]?.id).toBe("fresh-low-score");
+    expect(result.every(article => (NOW - Date.parse(article.published_at)) <= 6 * 60 * 60_000)).toBe(true);
+  });
+
+  it("does not manufacture articles when fewer than 30 eligible candidates exist", () => {
+    const result = rankAcceptedFeed({
+      accepted: [item("one", 30), item("two", 35)],
+      sport: "football", nowMs: NOW, hideRead: false, limit: 30,
+    });
+    expect(result).toHaveLength(2);
+  });
+
   it("keeps >6h Swedish-core news out of the normal feed", () => {
     const result = rankAcceptedFeed({
       accepted: [
