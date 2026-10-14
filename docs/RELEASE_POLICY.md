@@ -19,10 +19,10 @@ Detta är projektets versionspolicy; nya funktionsversioner börjar på patch **
 ## Uppdateringsinformation till användaren
 
 - Skriv kort svensk information om vad som ändrats och hur det hjälper användaren. Beskriv verklig funktion, utan löften om felfri AI eller garanterat resultat.
-- Uppdatera innehållet i `src/components/WelcomeModal.tsx` och dokumentera releasen i `docs/CHANGELOG.md` när versionen höjs.
-- Visa en enda dialog första gången den nya appversionens kod öppnas i en webbläsare eller PWA-installation. Befintliga användare ser uppdateringen; nya användare ser välkomstinformationen och uppdateringen i samma dialog.
+- Dokumentera varje release i `docs/CHANGELOG.md`. Uppdatera `src/components/WelcomeModal.tsx` när MAJOR eller MINOR ändras; PATCH-releaser är tysta.
+- Visa uppdateringsdialog endast när MAJOR eller MINOR förändras, inte när enbart PATCH förändras. Kvittens lagras per MAJOR.MINOR; redan sedda äldre patchspecifika kvittenser respekteras för bakåtkompatibilitet. Befintliga användare ser uppdateringen en gång per MAJOR.MINOR; nya användare ser välkomstinformation och den aktuella uppdateringen i samma dialog.
 - Markera informationen som sedd först när användaren bekräftar med knappen eller Escape. Bakgrundsklick stänger inte dialogen.
-- Spara kvittensen lokalt per version. Ingen inloggning, serverregistrering eller OS-push behövs. Synkronisera kvittensen mellan öppna flikar via `storage`-händelser.
+- Spara kvittensen lokalt per MAJOR.MINOR. Ingen inloggning, serverregistrering eller OS-push behövs. Synkronisera kvittensen mellan öppna flikar via `storage`-händelser.
 - Om lokal lagring är blockerad används minne under den aktuella sidans session. En fullständig omladdning kan då visa informationen igen; permanent kvittens kan inte garanteras utan fungerande lagring.
 - Dialogen ska fungera med tangentbord, fokuslås, fokusåterställning och skärmläsare samt rymmas inom mobilens viewport med intern scroll vid behov.
 
