@@ -1,0 +1,25 @@
+name: Read-only club eligibility audit
+on:
+  pull_request:
+    paths:
+      - .github/workflows/club-eligibility-audit.yml
+      - src/lib/__tests__/ingest/clubSourceLiveAudit.test.ts
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUN_LIVE_CLUB_SOURCE_AUDIT: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Test live feeds against actual production policy (read-only)
+        run: npx vitest run src/lib/__tests__/ingest/clubSourceLiveAudit.test.ts --reporter=verbose
