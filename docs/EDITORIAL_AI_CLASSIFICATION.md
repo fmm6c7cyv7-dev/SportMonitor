@@ -45,4 +45,6 @@ Each ingest request shares a maximum of 40 model calls and 45 seconds of cumulat
 
 ## Succé
 
+Production quality follow-up: retrospective weekly highlight reels, rankings, listicles and commentary such as “Veckans Mål” or “Tre punkter ... succéstarten” are not concrete exceptional achievements. Shared badge/priority policy suppresses SUCCESS even when an older AI assessment overclassified an article. Classifier guidance explicitly rejects these cases. Source balancing considers all 30 returned slots while preserving protected top items and bounded score differences.
+
 The Swedish term `succé` (including inflected forms) nominates an article for the same AI-based VIP review as existing candidate terms. Confirmed, concrete exceptional sporting achievements can receive the `SUCCESS` badge, category `success`, VIP and normal editorial ranking priority. Predictions, promotional praise, speculation, ordinary victories and unclear claims do not qualify. VIP is strictly editorial and does not independently authorize push delivery.

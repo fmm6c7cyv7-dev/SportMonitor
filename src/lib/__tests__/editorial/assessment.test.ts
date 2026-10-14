@@ -56,6 +56,17 @@ describe("editorial semantic policy", () => {
     expect(editorialUrgency(item)).toBe(12);
     expect(buildHardNewsArticleIds([item])).toEqual([item.url]);
   });
+  it.each([
+    "Veckans Mål vecka 41 – Eddie Genborg, Timrå",
+    "Tre punkter: Det talar för AIK – efter succéstarten",
+    "Rankingen: Årets fem bästa mål efter succén",
+  ])("does not mark retrospective commentary as exceptional VIP success: %s", title => {
+    const item = {title, url: "https://example.com/retrospective-success", editorial_assessment: assessment(title, "success", {badge: "SUCCESS"})};
+    expect(editorialBadge(item)).toBeNull();
+    expect(editorialUrgency(item)).toBe(0);
+    expect(isEditorialVip(item)).toBe(false);
+    expect(buildHardNewsArticleIds([item])).toEqual([]);
+  });
   it("does not promote unconfirmed or unassessed success claims", () => {
     const title = "Succé väntas för klubben";
     expect(isEditorialVip({title})).toBe(false);

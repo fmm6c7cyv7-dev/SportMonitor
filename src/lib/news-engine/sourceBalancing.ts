@@ -16,9 +16,10 @@ export type SourceBalancingOptions = {
 
 const DEFAULT_OPTIONS: Required<SourceBalancingOptions> = {
   minGap: 1,
-  lookahead: 6,
+  lookahead: 10,
   protectTop: 2,
-  limitIndex: 15,
+  // Balance all 30 API slots, not only the first half.
+  limitIndex: 30,
   maxScoreDropForReorder: 8,
 };
 

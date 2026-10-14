@@ -85,6 +85,13 @@ describe("balanceSources", () => {
     expect(result[1].id).toBe("a2");
   });
 
+  it("balances all 30 slots without source duplication or losing protected leaders", () => {
+    const items = Array.from({length: 30}, (_, index) => makeRankedArticle("article-" + index, index % 3 === 0 ? "B" : "A", 100 - index));
+    const result = balanceSources(items);
+    expect(result).toHaveLength(30);
+    expect(new Set(result.map(x => x.id)).size).toBe(30);
+    expect(result.slice(0, 2).map(x => x.id)).toEqual(["article-0", "article-1"]);
+  });
   it("wraps invalid input in EngineError", () => {
     expect(() =>
       balanceSources(null as never),

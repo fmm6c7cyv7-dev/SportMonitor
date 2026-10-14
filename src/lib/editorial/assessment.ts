@@ -30,10 +30,17 @@ export function getEditorialAssessment(item: EditorialItem): EditorialAssessment
       typeof a.model !== "string" || !a.model) return null;
   return a;
 }
+/** Exclude retrospective commentary from exceptional live sporting success. */
+function confirmedExceptionalSuccess(item: EditorialItem): boolean {
+  const title = (item.title ?? "").toLocaleLowerCase("sv");
+  if (/\b(veckans|månadens|årets|ranking|rankingen|topp\s*\d+|de\s+\d+\s+bästa|tre\s+punkter|analys|krönika|hyllning|succéstarten|succestarten)\b/iu.test(title)) return false;
+  return true;
+}
+
 export function hasEditorialPriority(item: EditorialItem): boolean {
   const a = getEditorialAssessment(item);
   return !!a && ((a.status === "reported" && a.badge === "HERE_WE_GO" && a.category === "transfer") || (a.status === "confirmed" && (a.breaking ||
-    ["transfer", "departure", "contract", "management", "match-event", "success", "discipline", "live"].includes(a.category))));
+    (["transfer", "departure", "contract", "management", "match-event", "discipline", "live"].includes(a.category) || (a.category === "success" && confirmedExceptionalSuccess(item))))));
 }
 export function editorialUrgency(item: EditorialItem): number {
   return hasEditorialPriority(item) ? 12 : 0;
@@ -41,7 +48,7 @@ export function editorialUrgency(item: EditorialItem): number {
 export function isEditorialVip(item: EditorialItem): boolean {
   const a = getEditorialAssessment(item);
   return hasEditorialPriority(item) && !!a && a.status === "confirmed" && (a.breaking ||
-    ["transfer", "departure", "contract", "management", "match-event", "success"].includes(a.category));
+    (["transfer", "departure", "contract", "management", "match-event"].includes(a.category) || (a.category === "success" && confirmedExceptionalSuccess(item))));
 }
 export function editorialBadge(item: EditorialItem): {label: string; variant: "justnu" | "live" | "mal" | "officiellt"} | null {
   const a = getEditorialAssessment(item);
@@ -50,7 +57,7 @@ export function editorialBadge(item: EditorialItem): {label: string; variant: "j
   // but it never grants a VIP-style visual badge or editorial urgency.
   if (a.badge === "RUMOR") return null;
   if (a.badge === "HERE_WE_GO") return ["confirmed", "reported"].includes(a.status) && a.category === "transfer" ? {label: "HERE WE GO 🚨", variant: "justnu"} : null;
-  if (a.status !== "confirmed") return null;
+  if (a.status !== "confirmed" || (a.category === "success" && !confirmedExceptionalSuccess(item))) return null;
   const allowed: Partial<Record<NonNullable<EditorialAssessment["badge"]>, readonly string[]>> = {
     DONE_DEAL: ["transfer", "contract"], OFFICIAL: ["transfer", "departure", "contract", "management"], CONFIRMED: ["transfer", "departure", "contract", "management"], PRESENTED: ["transfer", "management"], FIRED: ["management"], RESIGNED: ["management"], DEPARTURE: ["departure"], COACH: ["management"], CONTRACT: ["contract"], BREAKING: CATEGORIES, LIVE: ["live"], GOAL: ["match-event"], SUCCESS: ["success"],
   };
