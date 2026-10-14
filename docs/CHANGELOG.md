@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.3.3] - 2026-10-14
+
+### Rättat
+- AI Gateway får Vercels automatiska OIDC-autentisering från produktionsanropet, inte en otillgänglig runtime-miljövariabel.
+- Redan sparade, oklassificerade VIP-kandidater kan kompletteras med AI-bedömning endast om både publicering och inhämtning skett inom de senaste tre timmarna. Befintlig artikel uppdateras utan retroaktiv push.
+
 ## [6.3.2] - 2026-10-14
 
 ### Rättat
