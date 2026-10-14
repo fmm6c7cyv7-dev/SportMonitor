@@ -96,6 +96,38 @@ The feed should:
 
 ---
 
+## Club-relative source value and reader experience
+
+For a smaller club, a specialist local or supporter-run publication can be the
+most useful primary coverage. **Do not impose an automatic authority penalty
+because a publisher is labelled fan/community or is smaller than BBC.**
+Evaluate independently:
+
+- **Club relevance and original coverage:** detailed reporting, continuity,
+  interviews, team context and direct value to followers of the club.
+- **Reliability:** distinguish independently verified reporting, first-hand
+  sources, official announcements, sourced reports, speculation and promotion.
+  A trusted specialist source cannot make an unconfirmed rumor into VIP.
+- **Reader accessibility:** free readable articles are preferred. Moderate
+  advertising is not disqualifying. Intrusive ads, forced login, paywalls,
+  advertorials or betting-affiliate-heavy landing pages lower reader-value
+  suitability, but do not automatically negate reliable journalism.
+- **Coverage scope:** men's senior first-team news must be separated from
+  women's, academy, ticket sales, merchandising, podcasts and generic football.
+
+A club-focused article can outrank a less relevant story from a major news
+brand **within existing Tier 1/2/3 editorial relevance and freshness
+guardrails**. This is a proposed source evaluation policy, not a newly enabled
+scoring signal or a change to current ranking weights. Preserve canonical
+dedupe, bounded source balancing, favorite/local separation and push policy.
+Only onboard after real endpoint/feed tests establish freshness, accessible
+article URLs, original reporting, source reliability and scope filtering.
+
+Initial cases: Lincoln City / The Stacey West and SC Heerenveen / FeanOnline.
+See `docs/CLUB_SOURCE_EVALUATION_20261014.md`.
+
+---
+
 ## Future extension — former Sweden players
 
 A future category may track selected foreign players who previously played in Sweden and later moved abroad.
