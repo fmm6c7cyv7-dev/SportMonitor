@@ -27,6 +27,26 @@ describe("club-specific source guard (pre-activation)", () => {
     expect(isEligibleClubSourceArticle("FeanOnline", {title:"Topploeg wint belangrijke wedstrijd"})).toBe(false);
   });
 
+  it("ignores generic summary and tag references without headline identity", () => {
+    expect(isEligibleClubSourceArticle("The Stacey West", {
+      title: "West Ham United And Mark Kennedy's Last Hurrah",
+      summary: "We also publish Lincoln City news.",
+      tags: ["Lincoln City"],
+    })).toBe(false);
+    expect(isEligibleClubSourceArticle("FeanOnline", {
+      title: "Ron Jans terug in de Eredivisie?",
+      summary: "Bekijk hier ook het SC Heerenveen nieuws",
+      tags: ["Heerenveen"],
+    })).toBe(false);
+  });
+
+  it("accepts club identity in canonical URL slug", () => {
+    expect(isEligibleClubSourceArticle("The Stacey West", {
+      title: "Latest squad updates",
+      url: "https://staceywest.net/2026/lincoln-city-squad-updates",
+    })).toBe(true);
+  });
+
   it("preserves all existing sources without changes", () => {
     expect(isEligibleClubSourceArticle("BBC Sport", {title:"Premier League football news"})).toBe(true);
   });
