@@ -36,7 +36,6 @@ export async function dispatchPushForNewsItem(newsItemId: string) {
   if (!newsSport) {
     return { ok: true, reason: "core_ineligible_sport", sent: 0 };
   }
-  const isVipNews = audience.isVipNews;
   const subscriptions = audience.subscriptions;
 
   if (!subscriptions.length) {
@@ -112,10 +111,7 @@ export async function dispatchPushForNewsItem(newsItemId: string) {
       continue;
     }
 
-    if (
-      !isVipNews &&
-      exceedsRateLimit(deliveryLog, subscription.device_id, tenMinutesAgoMs)
-    ) {
+    if (exceedsRateLimit(deliveryLog, subscription.device_id, tenMinutesAgoMs)) {
       continue;
     }
 
@@ -127,7 +123,7 @@ export async function dispatchPushForNewsItem(newsItemId: string) {
           auth: subscription.auth,
         },
         {
-          title: isVipNews ? "🚨 SportMonitor Breaking" : "SportMonitor",
+          title: "SportMonitor",
           body: news.title,
           url: news.url ?? "/",
           tag: `news-${news.id}`,
@@ -142,7 +138,7 @@ export async function dispatchPushForNewsItem(newsItemId: string) {
       successfulPushes.push({
         device_id: subscription.device_id,
         news_item_id: news.id,
-        event_type: isVipNews ? "VIP_ARTICLE" : "ARTICLE",
+        event_type: "ARTICLE",
         sent_at: new Date().toISOString(),
       });
 
