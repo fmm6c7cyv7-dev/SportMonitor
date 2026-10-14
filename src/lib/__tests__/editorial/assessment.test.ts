@@ -108,6 +108,21 @@ describe("bounded Gateway classification", () => {
     expect(body.messages[1].content).not.toContain("HOT");
     expect(body.messages[0].content).toContain("UNTRUSTED DATA");
   });
+  it("uses Vercel Function OIDC from the request context when env variables are missing", async () => {
+    vi.stubEnv("AI_GATEWAY_API_KEY", "");
+    vi.stubEnv("VERCEL_OIDC_TOKEN", "");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(responseFor({
+      category: "contract", status: "confirmed", badge: "CONTRACT", breaking: false,
+      evidence: "Player signs contract",
+    })));
+    const budget = createEditorialBudget("test-function-oidc-token");
+    const result = await classifyEditorialArticle({title: "Player signs contract"}, budget);
+    expect(result?.category).toBe("contract");
+    const fetchMock = vi.mocked(fetch);
+    expect(fetchMock.mock.calls[0][1]?.headers).toMatchObject({
+      Authorization: "Bearer test-function-oidc-token",
+    });
+  });
   it("does not call on ordinary articles, missing credentials or exhausted budget", async () => {
     vi.stubEnv("AI_GATEWAY_API_KEY", ""); vi.stubEnv("VERCEL_OIDC_TOKEN", "");
     const fetchMock = vi.fn(); vi.stubGlobal("fetch", fetchMock);
