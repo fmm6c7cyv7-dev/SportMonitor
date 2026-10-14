@@ -1,3 +1,4 @@
+import { createEditorialBudget } from "@/lib/editorial/classifier";
 // src/app/api/ingest/route.ts
 
 import { NextResponse } from "next/server";
@@ -30,9 +31,11 @@ export async function GET(req: Request) {
     pushSent: number;
   }> = [];
 
+  const editorialBudget = createEditorialBudget();
+
   for (const feed of FEEDS) {
     try {
-      const result = await processFeedIngest(feed, supabase, aliasRows);
+      const result = await processFeedIngest(feed, supabase, aliasRows, editorialBudget);
 
       totalPushSent += result.pushSent;
       totalInserted += result.insertedCount;
@@ -49,8 +52,11 @@ export async function GET(req: Request) {
     }
   }
 
+  console.info("[editorial] ingest summary", editorialBudget.stats);
+
   return NextResponse.json({
     ok: true,
+    editorial: editorialBudget.stats,
     inserted: totalInserted,
     pushSent: totalPushSent,
     feedsProcessed: FEEDS.length,

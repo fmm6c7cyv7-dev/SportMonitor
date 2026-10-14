@@ -359,9 +359,14 @@ function buildEntityTokenFallbacks(meta: EntityMetaRow): string[] {
   if (meta.type === "team") {
     const aliases = TEAM_ALIASES[meta.name] || [];
     const derivedAliases = buildDerivedTeamAliases(meta.name);
-    const browseAliases = getBrowseSeedsForMeta(meta).flatMap(
-      (seed) => seed.aliases,
-    );
+    const browseAliases = getBrowseSeedsForMeta(meta).flatMap((seed) => {
+      // Browse search also indexes league context; it is not a club identity.
+      const league = getLeagueForTeam(seed.sport, seed.id);
+      const leagueTokens = new Set(
+        [league?.name ?? "", ...(league?.aliases ?? [])].map(normalizeToken),
+      );
+      return seed.aliases.filter(alias => !leagueTokens.has(normalizeToken(alias)));
+    });
 
     pushUnique(tokens, aliases);
     pushUnique(tokens, derivedAliases);

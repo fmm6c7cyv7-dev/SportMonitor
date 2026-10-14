@@ -30,6 +30,7 @@ export type RankingEntity = {
    ========================================================================== */
 
 export type RankingNewsItem = {
+  editorial_assessment?: unknown;
   id?: string;
   title?: string | null;
   summary?: string | null;

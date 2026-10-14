@@ -41,6 +41,7 @@ export type NewsGeoResolution = {
    ========================================================================== */
 
 export type DbItem = {
+  editorial_assessment?: unknown;
   id: string | null;
   sport: Sport;
   title: string;

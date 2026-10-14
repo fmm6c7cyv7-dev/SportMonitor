@@ -264,7 +264,7 @@ async function loadUnreadPushedItemsForDevice(args: {
 
   const { data: pushedNewsData, error: pushedNewsError } = await supabase
     .from("news_items")
-    .select("id,sport,title,url,source,published_at,fetched_at,tags,priority")
+    .select("id,sport,title,url,source,published_at,fetched_at,tags,priority,editorial_assessment")
     .eq("sport", sport)
     .in("id", unreadPushedIds);
 
@@ -818,7 +818,7 @@ export async function handleNewsFeedRequest(req: NextRequest) {
 
     const { data, error } = await supabase
       .from("news_items")
-      .select("id,sport,title,url,source,published_at,fetched_at,tags,priority")
+      .select("id,sport,title,url,source,published_at,fetched_at,tags,priority,editorial_assessment")
       .eq("sport", safeSport)
       .order("published_at", { ascending: false })
       .limit(fetchLimit);

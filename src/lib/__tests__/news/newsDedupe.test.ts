@@ -1,3 +1,4 @@
+import { assessment } from "../editorial/fixtures";
 import { describe, expect, it } from "vitest";
 import type { DbItem } from "@/lib/news/newsTypes";
 import {
@@ -20,6 +21,7 @@ function createDbItem(overrides: Partial<DbItem>): DbItem {
     fetched_at: overrides.fetched_at ?? null,
     tags: overrides.tags ?? [],
     priority: overrides.priority ?? 0,
+    editorial_assessment: overrides.editorial_assessment,
   };
 }
 
@@ -239,6 +241,7 @@ describe("newsDedupe canonical event clustering", () => {
       id: "men-goal",
       source: "Manchester Evening News",
       title: "Cunha rescues Manchester United with late equaliser at Fulham",
+      editorial_assessment: assessment("Cunha rescues Manchester United with late equaliser at Fulham", "match-event"),
       published_at: "2026-09-20T16:20:00.000Z",
       url: "https://example.com/men-goal",
     });
@@ -250,6 +253,7 @@ describe("newsDedupe canonical event clustering", () => {
       id: "sky-goal",
       source: "Sky Sports",
       title: "Cunha's late goal earns Man Utd a point away to Fulham",
+      editorial_assessment: assessment("Cunha's late goal earns Man Utd a point away to Fulham", "match-event"),
       published_at: "2026-09-20T16:24:00.000Z",
       url: "https://example.com/sky-goal",
     });
@@ -274,6 +278,7 @@ describe("newsDedupe canonical event clustering", () => {
       id: "men-1",
       source: "Manchester Evening News",
       title: "Cunha rescues Manchester United with late goal at Fulham",
+      editorial_assessment: assessment("Cunha rescues Manchester United with late goal at Fulham", "match-event"),
       published_at: "2026-09-20T16:20:00.000Z",
       url: "https://example.com/men-1",
     });
@@ -283,6 +288,7 @@ describe("newsDedupe canonical event clustering", () => {
       id: "bbc-1",
       source: "BBC Sport",
       title: "Late Cunha goal earns Manchester United draw at Fulham",
+      editorial_assessment: assessment("Late Cunha goal earns Manchester United draw at Fulham", "match-event"),
       published_at: "2026-09-20T16:18:00.000Z",
       url: "https://example.com/bbc-1",
     });
@@ -316,6 +322,7 @@ describe("newsDedupe canonical event clustering", () => {
       id: "community-transfer",
       source: "SvenskaFans – Kalmar FF",
       title: "Klart: Kalmar FF värvar ny anfallare",
+      editorial_assessment: assessment("Klart: Kalmar FF värvar ny anfallare", "transfer"),
       published_at: "2026-09-20T14:10:00.000Z",
       url: "https://example.com/community-transfer",
     });
@@ -325,6 +332,7 @@ describe("newsDedupe canonical event clustering", () => {
       id: "official-transfer",
       source: "Kalmar FF (officiell)",
       title: "Officiellt: Kalmar FF värvar ny anfallare",
+      editorial_assessment: assessment("Officiellt: Kalmar FF värvar ny anfallare", "transfer"),
       published_at: "2026-09-20T14:05:00.000Z",
       url: "https://example.com/official-transfer",
     });
@@ -365,6 +373,7 @@ describe("newsDedupe canonical event clustering", () => {
         id: "kalmar-transfer",
         source: "Aftonbladet – Fotboll",
         title: "Kalmar FF värvar ny anfallare",
+      editorial_assessment: assessment("Kalmar FF värvar ny anfallare", "transfer"),
         published_at: "2026-09-20T14:00:00.000Z",
         url: "https://example.com/kalmar-transfer",
       }),
@@ -376,6 +385,7 @@ describe("newsDedupe canonical event clustering", () => {
         id: "kalmar-coach",
         source: "SVT Sport – Fotboll",
         title: "Kalmar FF:s tränare avgår efter säsongen",
+      editorial_assessment: assessment("Kalmar FF:s tränare avgår efter säsongen", "management"),
         published_at: "2026-09-20T14:20:00.000Z",
         url: "https://example.com/kalmar-coach",
       }),
@@ -413,6 +423,7 @@ describe("newsDedupe canonical event clustering", () => {
         id: "breaking-transfer",
         source: "Kalmar FF (officiell)",
         title: "Officiellt: Kalmar FF värvar Erik Nilsson",
+      editorial_assessment: assessment("Officiellt: Kalmar FF värvar Erik Nilsson", "transfer"),
         published_at: "2026-09-20T14:00:00.000Z",
         url: "https://example.com/breaking-transfer",
       }),
@@ -424,6 +435,7 @@ describe("newsDedupe canonical event clustering", () => {
         id: "analysis-transfer",
         source: "Barometern – Kalmar FF",
         title: "Analys: därför passar Erik Nilsson perfekt i Kalmar FF",
+      editorial_assessment: assessment("Analys: därför passar Erik Nilsson perfekt i Kalmar FF", "other"),
         published_at: "2026-09-20T15:00:00.000Z",
         url: "https://example.com/analysis-transfer",
       }),

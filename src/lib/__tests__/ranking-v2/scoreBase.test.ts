@@ -1,3 +1,4 @@
+import { assessment } from "../editorial/fixtures";
 import { describe, expect, it } from "vitest";
 import type { EntityHit, NormalizedArticle } from "@/lib/news-engine/types";
 import { scoreBaseArticle } from "@/lib/ranking-v2/scoreBase";
@@ -22,6 +23,7 @@ function createArticle(overrides: Partial<NormalizedArticle>): NormalizedArticle
     favoriteSignal: overrides.favoriteSignal,
     localSignal: overrides.localSignal,
     bigNewsSignal: overrides.bigNewsSignal,
+    editorial_assessment: overrides.editorial_assessment,
   };
 }
 
@@ -119,6 +121,7 @@ describe("scoreBaseArticle", () => {
     const bigNhl = createArticle({
       id: "nhl-big-news",
       title: "NHL-klubben sparken tränaren – officiellt",
+      editorial_assessment: assessment("NHL-klubben sparken tränaren – officiellt", "management"),
       source: "Sportsnet – NHL",
       tags: ["OFFICIELLT"],
       urgency: 20,

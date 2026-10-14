@@ -1,3 +1,4 @@
+import { getEditorialAssessment, isEditorialCandidate } from "@/lib/editorial/assessment";
 // src/lib/news-engine/eventClustering.ts
 
 import type {
@@ -40,8 +41,15 @@ function normalizeText(value: string | null | undefined): string {
 }
 
 export function classifyEventCategory(
-  article: Pick<NormalizedArticle, "title" | "tags">,
+  article: Pick<NormalizedArticle, "title" | "tags" | "editorial_assessment">,
 ): EventCategory | null {
+  const assessment = getEditorialAssessment(article);
+  if (assessment) {
+    if (assessment.status === "denied" || assessment.status === "unclear") return null;
+    if (["departure", "contract"].includes(assessment.category)) return "transfer";
+    return assessment.category === "other" ? null : assessment.category as EventCategory;
+  }
+  if (isEditorialCandidate(article)) return null;
   const text = normalizeText(
     `${article.title} ${article.tags.join(" ")}`,
   );

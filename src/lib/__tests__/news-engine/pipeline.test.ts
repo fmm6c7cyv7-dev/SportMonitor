@@ -1,3 +1,4 @@
+import { assessment } from "../editorial/fixtures";
 // src/lib/__tests__/news-engine/pipeline.test.ts
 
 import { describe, expect, it } from "vitest";
@@ -38,6 +39,7 @@ function makeArticle(
       matched: true,
       reason: "regional-interest",
     },
+    editorial_assessment: overrides.title ? undefined : assessment("Alexander Isak avgör för Newcastle", "match-event"),
     bigNewsSignal: undefined,
     ...overrides,
   };
@@ -124,12 +126,14 @@ describe("runRankingPipeline", () => {
       [
         makeArticle("dup-1", {
           title: "Alexander Isak scores winner for Liverpool",
+          editorial_assessment: assessment("Alexander Isak scores winner for Liverpool", "match-event"),
           url: "https://example.com/story?utm_source=one",
           publishedAt,
           source: "BBC Sport",
         }),
         makeArticle("dup-2", {
           title: "Alexander Isak scores winner for Liverpool",
+          editorial_assessment: assessment("Alexander Isak scores winner for Liverpool", "match-event"),
           url: "https://example.com/story?utm_source=two",
           publishedAt,
           source: "SVT Sport",
@@ -153,11 +157,13 @@ describe("runRankingPipeline", () => {
       [
         makeArticle("event-1", {
           title: "Alexander Isak scores winner",
+          editorial_assessment: assessment("Alexander Isak scores winner", "match-event"),
           source: "BBC Sport",
           publishedAt,
         }),
         makeArticle("event-2", {
           title: "Isak scores late goal",
+          editorial_assessment: assessment("Isak scores late goal", "match-event"),
           source: "SVT Sport",
           publishedAt,
         }),
@@ -181,11 +187,13 @@ describe("runRankingPipeline", () => {
       [
         makeArticle("event-collapse-1", {
           title: "Alexander Isak scores winner",
+          editorial_assessment: assessment("Alexander Isak scores winner", "match-event"),
           source: "BBC Sport",
           publishedAt,
         }),
         makeArticle("event-collapse-2", {
           title: "Isak scores late goal",
+          editorial_assessment: assessment("Isak scores late goal", "match-event"),
           source: "SVT Sport",
           publishedAt,
         }),

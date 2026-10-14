@@ -1,5 +1,7 @@
 "use client";
 
+import { editorialBadge, hasEditorialPriority } from "@/lib/editorial/assessment";
+
 import { useEffect, useRef, useState } from "react";
 import type { NewsItem, Sport } from "@/lib/types";
 import Badge from "@/components/Badge";
@@ -96,13 +98,6 @@ function getPublishedAtMs(item: NewsItem): number {
   return new Date(item.published_at ?? 0).getTime();
 }
 
-function getUpperTags(item: NewsItem): string[] {
-  if (!Array.isArray(item.tags)) return [];
-  return item.tags
-    .filter((value): value is string => typeof value === "string")
-    .map((value) => value.toUpperCase());
-}
-
 export function isValidTopHighlightItem(item: NewsItem | null): item is NewsItem {
   if (!item?.title || !item?.url || !item?.published_at) {
     return false;
@@ -111,42 +106,8 @@ export function isValidTopHighlightItem(item: NewsItem | null): item is NewsItem
   return Number.isFinite(getPublishedAtMs(item));
 }
 
-function hasSillySeasonSignal(item: NewsItem): boolean {
-  const titleUpper = item.title.toUpperCase();
-  const tagsUpper = getUpperTags(item);
-
-  return (
-    titleUpper.includes("SILLY SEASON") ||
-    tagsUpper.includes("SILLY_SEASON") ||
-    tagsUpper.includes("SILLY SEASON")
-  );
-}
-
-function hasSparkenSignal(item: NewsItem): boolean {
-  const titleUpper = item.title.toUpperCase();
-  const tagsUpper = getUpperTags(item);
-
-  return (
-    titleUpper.includes("SPARKEN") ||
-    titleUpper.includes("FÅR SPARKEN") ||
-    titleUpper.includes("SACKED") ||
-    titleUpper.includes("DISMISS") ||
-    tagsUpper.includes("SPARKEN")
-  );
-}
-
 export function hasTopHighlightSpecialSignal(item: NewsItem): boolean {
-  const tagsUpper = getUpperTags(item);
-
-  if (item.is_local === true) {
-    return true;
-  }
-
-  if (tagsUpper.includes("JUST_NU") || tagsUpper.includes("HOT")) {
-    return true;
-  }
-
-  return hasSillySeasonSignal(item) || hasSparkenSignal(item);
+  return item.is_local === true || hasEditorialPriority(item);
 }
 
 type Candidate = {
@@ -343,6 +304,7 @@ export default function TopHighlight() {
 
 
   const item = pick.item;
+  const badge = editorialBadge(item);
 
   const backgroundUrl =
     item.sport === "football"
@@ -385,8 +347,8 @@ export default function TopHighlight() {
           <div className="flex items-start gap-4">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                {pick.hasSpecialSignal ? (
-                  <Badge variant="justnu">JUST NU</Badge>
+                {badge ? (
+                  <Badge variant={badge.variant}>{badge.label}</Badge>
                 ) : null}
                 {pick.favMatch ? (
                   <span

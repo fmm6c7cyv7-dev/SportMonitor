@@ -1,8 +1,10 @@
 "use client";
 
+import { editorialBadge } from "@/lib/editorial/assessment";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { NewsItem, Sport } from "@/lib/types";
-import Badge, { type BadgeVariant } from "@/components/Badge";
+import Badge from "@/components/Badge";
 import EnablePushButton from "@/components/EnablePushButton";
 import ToggleSwitch from "@/components/ToggleSwitch";
 import { getDeviceId } from "@/lib/deviceId";
@@ -194,98 +196,6 @@ function timeAgo(iso: string, nowMs: number): string {
   return `${hours} h`;
 }
 
-function getBadgeInfo(
-  title: string,
-  tags?: string[] | null,
-): { label: string; variant: BadgeVariant } | null {
-  const upperTags = (tags ?? []).map((value) => value.toUpperCase());
-  const titleUpper = (title ?? "").toUpperCase();
-
-  if (upperTags.includes("JUST_NU")) {
-    return { label: "JUST NU", variant: "justnu" };
-  }
-
-  if (upperTags.includes("LIVE")) {
-    return { label: "LIVE", variant: "live" };
-  }
-
-  if (upperTags.includes("HOT")) {
-    return { label: "MÅL", variant: "mal" };
-  }
-
-  if (titleUpper.includes("HERE WE GO") || upperTags.includes("HERE_WE_GO")) {
-    return { label: "HERE WE GO 🚨", variant: "justnu" };
-  }
-
-  if (titleUpper.includes("DONE DEAL") || upperTags.includes("DONE_DEAL")) {
-    return { label: "DONE DEAL", variant: "justnu" };
-  }
-
-  if (
-    titleUpper.includes("OFFICIELLT") ||
-    titleUpper.includes("OFFICIAL") ||
-    upperTags.includes("OFFICIELLT")
-  ) {
-    return { label: "OFFICIELLT", variant: "officiellt" };
-  }
-
-  if (
-    titleUpper.includes("KLART:") ||
-    titleUpper.includes("ÄR KLART") ||
-    titleUpper.includes("KLAR SOM") ||
-    upperTags.includes("KLART")
-  ) {
-    return { label: "KLART", variant: "justnu" };
-  }
-
-  if (titleUpper.includes("PRESENTERAD") || titleUpper.includes("UNVEIL")) {
-    return { label: "PRESENTERAD", variant: "officiellt" };
-  }
-
-  if (
-    titleUpper.includes("FÅR SPARKEN") ||
-    titleUpper.includes("SPARKAR") ||
-    titleUpper.includes("SACKED") ||
-    titleUpper.includes("DISMISS")
-  ) {
-    return { label: "SPARKEN", variant: "justnu" };
-  }
-
-  if (
-    titleUpper.includes("AVGÅR") ||
-    titleUpper.includes("RESIGNS") ||
-    titleUpper.includes("STEPS DOWN")
-  ) {
-    return { label: "AVGÅR", variant: "justnu" };
-  }
-
-  if (
-    titleUpper.includes("LÄMNAR") ||
-    titleUpper.includes("DEPARTS") ||
-    titleUpper.includes("LEAVES")
-  ) {
-    return { label: "LÄMNAR", variant: "live" };
-  }
-
-  if (
-    titleUpper.includes("UPPGIFTER:") ||
-    titleUpper.includes("RYKTE") ||
-    titleUpper.includes("LINKED WITH")
-  ) {
-    return { label: "RYKTE", variant: "live" };
-  }
-
-  if (
-    titleUpper.includes("APPOINT") ||
-    titleUpper.includes("TAKES OVER") ||
-    titleUpper.includes("TAR ÖVER") ||
-    titleUpper.includes("NY TRÄNARE")
-  ) {
-    return { label: "NY TRÄNARE", variant: "officiellt" };
-  }
-
-  return null;
-}
 
 function normalizeEntityLabel(value: string): string {
   return foldDiacritics(value).trim();
@@ -1086,7 +996,7 @@ export default function NewsColumn({
         ) : (
           visibleItems.map((item) => {
             const key = String(item.id ?? item.url);
-            const badge = getBadgeInfo(item.title, item.tags);
+            const badge = editorialBadge(item);
             const favoriteLabels = extractFavoriteLabels(item);
             const favoriteMatch =
               favoriteLabels.length > 0 || item.favorite_match === true;

@@ -1,3 +1,4 @@
+import { assessment } from "../editorial/fixtures";
 // src/lib/__tests__/news-engine/candidateLoader.test.ts
 
 import { describe, expect, it } from "vitest";
@@ -79,11 +80,12 @@ describe("candidateLoader", () => {
     expect(result[1].id).toBe("a2");
   });
 
-  it("builds hard-news ids from lexical signals", () => {
+  it("builds hard-news ids from validated interpretation", () => {
     const result = buildHardNewsArticleIds([
       {
         id: "a1",
         title: "JUST NU: tränaren avgår",
+        editorial_assessment: assessment("JUST NU: tränaren avgår", "management"),
         url: "https://example.com/a1",
         tags: [],
       },

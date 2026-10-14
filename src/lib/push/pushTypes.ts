@@ -5,6 +5,7 @@
    ========================================================================== */
 
 export type NewsRow = {
+  editorial_assessment?: unknown;
   id: string;
   title: string;
   url: string | null;

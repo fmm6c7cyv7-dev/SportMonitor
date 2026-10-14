@@ -42,6 +42,7 @@ export function mergeRankedArticlesIntoAccepted(
         published_at: ranked.publishedAt ?? "",
         fetched_at: null,
         tags: ranked.tags ?? null,
+        editorial_assessment: ranked.editorial_assessment,
         priority: ranked.priority ?? null,
         isFavorite: false,
         isLocal: rankedLocalMatched,

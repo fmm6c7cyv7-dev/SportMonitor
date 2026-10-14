@@ -1,3 +1,4 @@
+import { assessment } from "../editorial/fixtures";
 // src/lib/__tests__/news-engine/eventClustering.test.ts
 
 import { describe, expect, it } from "vitest";
@@ -16,6 +17,7 @@ function article(
     id,
     sport: overrides.sport ?? "football",
     title,
+    editorial_assessment: assessment(title, title === "Alexander Isak signs for Liverpool" || title === "Alexander Isak signs new contract" ? "transfer" : title === "Confirmed lineup: Alexander Isak starts" ? "lineup" : title.includes("scores") ? "match-event" : "other"),
     url: overrides.url ?? `https://example.com/${id}`,
     source: overrides.source ?? "Example Sport",
     publishedAt: overrides.publishedAt ?? "2026-09-20T10:00:00.000Z",
@@ -50,7 +52,7 @@ describe("eventClustering", () => {
       classifyEventCategory(article("a2", "Alexander Isak signs for Liverpool")),
     ).toBe("transfer");
     expect(
-      classifyEventCategory(article("a3", "Alexander Isak ruled out with injury")),
+      classifyEventCategory(article("a3", "Alexander Isak ruled out with injury", {editorial_assessment: assessment("Alexander Isak ruled out with injury", "injury")})),
     ).toBe("injury");
     expect(
       classifyEventCategory(article("a4", "Confirmed lineup: Alexander Isak starts")),

@@ -1,3 +1,4 @@
+import { hasEditorialPriority } from "@/lib/editorial/assessment";
 // src/lib/ranking-v2/scoreSource.ts
 
 import {
@@ -26,7 +27,7 @@ function normalizeText(value: string | null | undefined): string {
 }
 
 function ensureValidArticle(
-  article: Pick<NormalizedArticle, "source" | "sport" | "title" | "tags">,
+  article: Pick<NormalizedArticle, "source" | "sport" | "title" | "tags" | "editorial_assessment">,
 ): void {
   if (!article || typeof article !== "object") {
     throw new EngineValidationError("Article must be an object", {
@@ -105,17 +106,12 @@ function scoreAuthorityFromHeuristics(
   return score;
 }
 
-function hasHardNewsSignal(text: string): boolean {
-  return /\b(officiellt|official|klart|klar|bekraftat|bekräftat|presenterad|presenteras|confirmed|signs|signerar)\b/u.test(
-    text,
-  );
-}
-
 function scoreAuthorityFromSource(
   sourceRaw: string,
   sourceNormalized: string,
   text: string,
   reasons: string[],
+  hardNews: boolean,
 ): number {
   const profile = getSourceProfile(sourceRaw);
 
@@ -148,7 +144,7 @@ function scoreAuthorityFromSource(
         text,
       );
 
-    if (hasLowNewsSignal && !hasHardNewsSignal(text)) {
+    if (hasLowNewsSignal && !hardNews) {
       score -= 4;
       reasons.push("fan-community-low-news-signal");
     }
@@ -220,7 +216,7 @@ function scoreCountryFitFromText(text: string, reasons: string[]): number {
 }
 
 export function scoreSourceSignal(
-  article: Pick<NormalizedArticle, "source" | "sport" | "title" | "tags">,
+  article: Pick<NormalizedArticle, "source" | "sport" | "title" | "tags" | "editorial_assessment">,
 ): SourceScoreSignal {
   try {
     ensureValidArticle(article);
@@ -234,6 +230,7 @@ export function scoreSourceSignal(
       source,
       text,
       reasons,
+      hasEditorialPriority(article),
     );
     const leagueFit = scoreLeagueFitFromText(
       source,

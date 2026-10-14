@@ -1,3 +1,4 @@
+import { editorialUrgency, hasEditorialPriority } from "@/lib/editorial/assessment";
 // src/lib/news-engine/candidateLoader.ts
 
 import {
@@ -27,6 +28,7 @@ export type LegacyRankingEntity = {
 };
 
 export type LegacyAcceptedCandidate = {
+  editorial_assessment?: unknown;
   id?: string | null;
   sport?: EngineSport | null;
   title?: string | null;
@@ -218,22 +220,7 @@ function buildTrustedFavoriteSignal(
 }
 
 function inferUrgencyFromLegacyItem(item: LegacyAcceptedCandidate): number {
-  const text = `${item.title ?? ""} ${(item.tags ?? []).join(" ")}`.toLowerCase();
-
-  let urgency = 0;
-
-  // Favorite personalization is ranking context, not article urgency.
-  // Keeping it out of urgency makes favorites-first the only switch that
-  // changes favorite ordering.
-  if (
-    /\b(just nu|live|breaking|avgår|avgar|sparken|klart|officiellt|mål|mal|hattrick|avgör|avgor)\b/u.test(
-      text,
-    )
-  ) {
-    urgency += 12;
-  }
-
-  return urgency;
+  return editorialUrgency(item);
 }
 
 function inferCanonicalUrl(url: string): string {
@@ -270,6 +257,7 @@ export function toNormalizedArticle(
           ? item.sport
           : context.sport,
       title,
+      editorial_assessment: item.editorial_assessment,
       url: item.url,
       source,
       publishedAt: item.published_at ?? null,
@@ -338,13 +326,7 @@ export function buildHardNewsArticleIds(
     ensureValidCandidates(items);
 
     return items
-      .filter((item) => {
-        const text = `${item.title ?? ""} ${(item.tags ?? []).join(" ")}`.toLowerCase();
-
-        return /\b(just nu|live|breaking|avgår|avgar|sparken|klart|officiellt|mål|mal|hattrick|avgör|avgor)\b/u.test(
-          text,
-        );
-      })
+      .filter(hasEditorialPriority)
       .map((item) => normalizeString(item.id) || item.url);
   } catch (error) {
     throw toEngineError(

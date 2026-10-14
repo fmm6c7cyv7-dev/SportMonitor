@@ -17,6 +17,7 @@ export type FavoriteEntityType = "team" | "player" | "league" | "staff";
    ========================================================================== */
 
 export type NewsItem = {
+  editorial_assessment?: unknown;
   id?: string | number;
   url: string;
   title: string;

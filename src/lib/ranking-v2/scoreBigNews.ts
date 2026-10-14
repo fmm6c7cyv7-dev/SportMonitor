@@ -1,3 +1,4 @@
+import { getEditorialAssessment, hasEditorialPriority, editorialUrgency } from "@/lib/editorial/assessment";
 // src/lib/ranking-v2/scoreBigNews.ts
 
 import {
@@ -15,33 +16,8 @@ import {
   validateRankingConfig,
 } from "@/lib/ranking-v2/rankingConfig";
 
-const MANAGEMENT_PATTERN =
-  /\b(avgar|avgår|sparken|sacked|resigns|resigned|fired)\b/u;
-
-const TRANSFER_PATTERN =
-  /\b(here we go|klart|klar|officiellt|official|confirmed|done deal|signs|signed)\b/u;
-
-const MATCH_EVENT_PATTERN =
-  /\b(goal|mal|mål|hattrick|utklassning|avgor|avgör|kvitterar|matchvinnare|vinstmal|vinstmål)\b/u;
-
-const LIVE_PATTERN =
-  /\b(live|just nu|breaking|red card|rott kort|rött kort|utvisning|matchstraff)\b/u;
-
-function normalizeText(value: string | null | undefined): string {
-  return (value ?? "")
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
-function buildSearchText(article: Pick<NormalizedArticle, "title" | "tags">): string {
-  const tagText = (article.tags ?? []).join(" ");
-  return normalizeText(`${article.title ?? ""} ${tagText}`);
-}
-
 function ensureValidArticle(
-  article: Pick<NormalizedArticle, "title" | "tags" | "urgency">,
+  article: Pick<NormalizedArticle, "title" | "tags" | "urgency" | "editorial_assessment">,
 ): void {
   if (!article || typeof article !== "object") {
     throw new EngineValidationError("Article must be an object", {
@@ -82,19 +58,20 @@ function addCategory(
 }
 
 export function scoreBigNewsSignal(
-  article: Pick<NormalizedArticle, "title" | "tags" | "urgency">,
+  article: Pick<NormalizedArticle, "title" | "tags" | "urgency" | "editorial_assessment">,
   config: RankingConfig = DEFAULT_RANKING_CONFIG,
 ): BigNewsSignal {
   try {
     ensureValidArticle(article);
     const safeConfig = validateRankingConfig(config);
-    const text = buildSearchText(article);
+    const assessment = getEditorialAssessment(article);
+    const allowed = hasEditorialPriority(article);
 
     const categories = new Set<EngineBigNewsCategory>();
     const matchedTerms = new Set<string>();
     const scoreRef = { value: 0 };
 
-    if (MANAGEMENT_PATTERN.test(text)) {
+    if (allowed && assessment?.category === "management") {
       addCategory(
         categories,
         matchedTerms,
@@ -105,7 +82,7 @@ export function scoreBigNewsSignal(
       );
     }
 
-    if (TRANSFER_PATTERN.test(text)) {
+    if (allowed && !!assessment && ["transfer", "departure", "contract"].includes(assessment.category)) {
       addCategory(
         categories,
         matchedTerms,
@@ -116,7 +93,7 @@ export function scoreBigNewsSignal(
       );
     }
 
-    if (MATCH_EVENT_PATTERN.test(text)) {
+    if (allowed && assessment?.category === "match-event") {
       addCategory(
         categories,
         matchedTerms,
@@ -127,7 +104,7 @@ export function scoreBigNewsSignal(
       );
     }
 
-    if (LIVE_PATTERN.test(text)) {
+    if (allowed && !!assessment && (assessment.breaking || ["live", "discipline"].includes(assessment.category))) {
       addCategory(
         categories,
         matchedTerms,
@@ -140,10 +117,10 @@ export function scoreBigNewsSignal(
 
     let fromUrgency = false;
 
-    if (article.urgency >= safeConfig.urgencyThresholds.high) {
+    if (editorialUrgency(article) >= safeConfig.urgencyThresholds.high) {
       scoreRef.value += safeConfig.bigNewsBoosts.urgencyHigh;
       fromUrgency = true;
-    } else if (article.urgency >= safeConfig.urgencyThresholds.medium) {
+    } else if (editorialUrgency(article) >= safeConfig.urgencyThresholds.medium) {
       scoreRef.value += safeConfig.bigNewsBoosts.urgencyMedium;
       fromUrgency = true;
     }

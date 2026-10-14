@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { normalizeToken } from "@/lib/news/newsGeo";
 
 import { buildAcceptedItem } from "@/lib/feed/newsFeedRequest";
 import {
@@ -239,7 +240,7 @@ describe("direct favorite vs related context", () => {
       newsEntityIdsByNewsId: new Map(),
       newsEntitiesByNewsId: new Map(),
       geoActiveRegion: null,
-      normalizedTitle: title.toLowerCase(),
+      normalizedTitle: normalizeToken(title),
     });
 
     expect(result.favorite_match).toBe(true);
@@ -280,7 +281,7 @@ describe("direct favorite vs related context", () => {
       newsEntityIdsByNewsId: new Map(),
       newsEntitiesByNewsId: new Map(),
       geoActiveRegion: null,
-      normalizedTitle: title.toLowerCase(),
+      normalizedTitle: normalizeToken(title),
     });
 
     expect(result.favorite_match).toBe(true);

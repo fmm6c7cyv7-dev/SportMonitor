@@ -3,7 +3,7 @@ import {
   buildNewsSearchText,
   favoriteMatchesNews,
 } from "@/lib/push/pushMatching";
-import { VIP_REGEX } from "@/lib/push/pushPolicy";
+import { isEditorialVip } from "@/lib/editorial/assessment";
 import type {
   FavoriteRow,
   NewsEntityRow,
@@ -45,7 +45,7 @@ export async function evaluatePushAudienceForNewsItem(
 ): Promise<PushAudienceEvaluation> {
   const { data: news, error: newsError } = await supabase
     .from("news_items")
-    .select("id,title,url,tags,sport,fetched_at,published_at,source")
+    .select("id,title,url,tags,sport,fetched_at,published_at,source,editorial_assessment")
     .eq("id", newsItemId)
     .single<AudienceNewsRow>();
 
@@ -73,7 +73,7 @@ export async function evaluatePushAudienceForNewsItem(
   const newsSport = news.sport === "football" || news.sport === "hockey"
     ? news.sport
     : null;
-  const isVipNews = VIP_REGEX.test(news.title);
+  const isVipNews = isEditorialVip(news);
 
   if (!newsSport) {
     return {

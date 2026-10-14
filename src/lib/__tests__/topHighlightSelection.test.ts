@@ -1,3 +1,4 @@
+import { assessment } from "./editorial/fixtures";
 import { describe, expect, it } from "vitest";
 import type { NewsItem, Sport } from "@/lib/types";
 import {
@@ -65,6 +66,7 @@ describe("TopHighlight selection", () => {
       publishedAtMs: nowMs - 12 * 60_000,
     });
 
+    specialWithinTie.editorial_assessment = assessment(specialWithinTie.title, "management", {badge: "FIRED"});
     const winner = selectTopHighlightCandidate([normalFresh, specialWithinTie], nowMs);
 
     expect(winner?.item.id).toBe("special-within-tie");

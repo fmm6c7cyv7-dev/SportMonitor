@@ -1,3 +1,4 @@
+import { classifyEditorialArticle, createEditorialBudget, type EditorialBudget } from "@/lib/editorial/classifier";
 // src/lib/ingest/processFeed.ts
 
 import { parseRssFeed } from "@/lib/rss";
@@ -97,6 +98,7 @@ type DetectedEntityHit = {
 };
 
 type ParsedDetectedItem = {
+  summary?: string | null;
   dbRow: {
     sport: Sport;
     title: string;
@@ -106,6 +108,7 @@ type ParsedDetectedItem = {
     fetched_at: string;
     tags: string[];
     priority: number;
+    editorial_assessment?: unknown;
   };
   detected: DetectedEntityHit[];
 };
@@ -542,6 +545,7 @@ function buildParsedDetectedItems(
     const priority = calculatePriority(item.combinedText, detected);
 
     output.push({
+      summary: item.summary,
       dbRow: {
         sport: resolvedSport.sport,
         title: item.title,
@@ -668,6 +672,7 @@ export async function processFeedIngest(
   feed: FeedDef,
   supabase: SupabaseServiceClient,
   aliasRows: EntityAliasRows,
+  editorialBudget: EditorialBudget = createEditorialBudget(),
 ): Promise<ProcessFeedResult> {
   const debug = createEmptyFeedIngestDebug();
 
@@ -785,11 +790,26 @@ export async function processFeedIngest(
     };
   }
 
-  const payload = parsedItems.map((item) => item.dbRow);
-  const newlyCreatedRows = await upsertNewsItems(supabase, payload);
+  // Dedupe before spending on AI. Database unique URL remains the final race guard.
+  const uniqueItems = Array.from(new Map(parsedItems.map(item => [item.dbRow.url, item])).values());
+  const { data: existing, error: existingError } = await supabase.from("news_items")
+    .select("url").in("url", uniqueItems.map(item => item.dbRow.url));
+  if (existingError) throw existingError;
+  const existingUrls = new Set((existing ?? []).map(row => row.url));
+  const newItems = uniqueItems.filter(item => !existingUrls.has(item.dbRow.url));
+  // At most two simultaneous requests; all feeds share the request budget.
+  for (let i = 0; i < newItems.length; i += 2) {
+    await Promise.all(newItems.slice(i, i + 2).map(async item => {
+      item.dbRow.editorial_assessment = await classifyEditorialArticle({
+        title: item.dbRow.title, tags: item.dbRow.tags, summary: item.summary,
+      }, editorialBudget);
+    }));
+  }
+  const payload = newItems.map((item) => item.dbRow);
+  const newlyCreatedRows = payload.length ? await upsertNewsItems(supabase, payload) : [];
 
   debug.duplicateOrExistingCount = Math.max(
-    payload.length - newlyCreatedRows.length,
+    parsedItems.length - newlyCreatedRows.length,
     0,
   );
 

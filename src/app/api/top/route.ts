@@ -113,51 +113,6 @@ function timeAgoShort(iso?: string | null, nowMs = Date.now()): string | null {
    TOP SCORING HELPERS
    ========================================================================== */
 
-function scoreUrgency(text: string): number {
-  let score = 0;
-
-  if (/\b(mål|goal|scorar|målskytt|nätar|avgör|kvitterar)\b/i.test(text)) {
-    score += 40;
-  }
-
-  if (
-    /\b(1[-–:]0|2[-–:]1|3[-–:]2|4[-–:]3|5[-–:]4|0[-–:]1|1[-–:]2|2[-–:]3)\b/.test(
-      text,
-    )
-  ) {
-    score += 35;
-  }
-
-  if (/\b(hattrick|gjorde sitt (andra|tredje|fjärde))\b/i.test(text)) {
-    score += 20;
-  }
-
-  if (/\b(matchslut|slutresultat|full time|ft|slut|avgjort)\b/i.test(text)) {
-    score += 18;
-  }
-
-  if (/\b(halvtid|halvlek|periodpaus|paus)\b/i.test(text)) {
-    score += 10;
-  }
-
-  if (/\b(förlängning|straffar|straffläggning)\b/i.test(text)) {
-    score += 12;
-  }
-
-  if (/\b(rött kort|utvisad|utvisning|matchstraff)\b/i.test(text)) {
-    score += 18;
-  }
-
-  if (/\b(krönika|intervju|guide|biljetter|event|festival|premiär)\b/i.test(text)) {
-    score -= 25;
-  }
-
-  if (/\b(rykte|uppgifter|förhandlar|kontrakt|transfer)\b/i.test(text)) {
-    score -= 8;
-  }
-
-  return score;
-}
 
 function scoreRecency(pubDate?: string): number {
   const age = ageHours(pubDate);
@@ -167,9 +122,12 @@ function scoreRecency(pubDate?: string): number {
 }
 
 function scoreTopItem(item: RssItem): number {
-  const text = getText(item);
   const recency = scoreRecency(item.pubDate);
-  const urgency = scoreUrgency(text);
+  // This independent RSS path has no persisted editorial assessment.
+  const text = getText(item);
+  const urgency =
+    (/\b(krönika|intervju|guide|biljetter|event|festival|premiär)\b/i.test(text) ? -25 : 0) +
+    (/\b(rykte|uppgifter|förhandlar|kontrakt|transfer)\b/i.test(text) ? -8 : 0);
 
   const titleLengthBonus = Math.min(
     8,

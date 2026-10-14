@@ -1,3 +1,4 @@
+import { editorialUrgency } from "@/lib/editorial/assessment";
 // src/lib/ranking-v2/scoreBase.ts
 
 import {
@@ -496,7 +497,7 @@ export function scoreBaseArticle(
     const components = createEmptyScoreComponents();
 
     components.recency = getRecencyScore(article.publishedAt, context.nowMs);
-    components.urgency = getUrgencyScore(article.urgency);
+    components.urgency = getUrgencyScore(editorialUrgency(article));
 
     const swedishSignals = getSwedishSignals(article.entityHits);
     components.swedishPlayer = swedishSignals.swedishPlayer;
@@ -544,7 +545,8 @@ export function scoreBaseArticle(
     const bigNewsSignal = scoreBigNewsSignal({
       title: article.title,
       tags: article.tags,
-      urgency: article.urgency,
+      urgency: editorialUrgency(article),
+      editorial_assessment: article.editorial_assessment,
     });
 
     components.bigNews = bigNewsSignal.score;
@@ -579,6 +581,7 @@ export function scoreBaseArticle(
     });
 
     const sourceSignal = scoreSourceSignal({
+      editorial_assessment: article.editorial_assessment,
       source: article.source,
       sport: article.sport,
       title: article.title,

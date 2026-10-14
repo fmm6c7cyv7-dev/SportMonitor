@@ -1,3 +1,4 @@
+import { getEditorialAssessment, isEditorialCandidate, type EditorialItem } from "@/lib/editorial/assessment";
 // src/lib/news/newsDedupe.ts
 
 import type { DbItem } from "@/lib/news/newsTypes";
@@ -407,7 +408,14 @@ function classifyArticleAngle(title: string): CanonicalArticleAngle {
   return "news";
 }
 
-function canonicalEventType(title: string): string | null {
+function canonicalEventType(item: EditorialItem & {title: string}): string | null {
+  const {title} = item;
+  const a = getEditorialAssessment(item);
+  if (a) {
+    if (a.status === "denied" || a.status === "unclear" || a.category === "other") return null;
+    return a.category === "match-event" ? "goal" : ["departure", "contract"].includes(a.category) ? "transfer" : a.category;
+  }
+  if (isEditorialCandidate(item)) return null;
   const normalized = normalizeTitle(title);
 
   if (/\b(red card|rott kort|rött kort|utvisning|matchstraff)\b/u.test(normalized)) {
@@ -528,12 +536,13 @@ export function getSourceQualityScoreForDedupe(source: string): number {
 
 
 export function getCanonicalSourceScoreForDedupe(
-  item: Pick<DbItem, "source" | "sport" | "title" | "tags">,
+  item: Pick<DbItem, "source" | "sport" | "title" | "tags" | "editorial_assessment">,
   context?: CanonicalDedupeContext,
 ): number {
   const profile = getSourceProfile(item.source);
   const baseQuality = getSourceQualityScoreForDedupe(item.source);
   const sourceSignal = scoreSourceSignal({
+    editorial_assessment: item.editorial_assessment,
     source: item.source,
     sport: item.sport,
     title: item.title,
@@ -697,7 +706,7 @@ export function shouldAcceptNewsItem(
     const personKey = extractPersonKey(item.title);
 
     if (personKey) {
-      const eventType = extractEventType(item.title);
+      const eventType = canonicalEventType(item);
       const bucket = dayBucketISO(item.published_at);
       const key = eventKey(personKey, eventType, bucket);
 
@@ -730,7 +739,7 @@ export function shouldAcceptNewsItem(
     const currentEntityIds = uniqueEntityIds(context);
     const currentTeamIds = entityIdsByType(context, ["team"]);
     const currentPersonIds = entityIdsByType(context, ["player", "staff"]);
-    const currentEventType = canonicalEventType(item.title);
+    const currentEventType = canonicalEventType(item);
     const currentAngle = classifyArticleAngle(item.title);
     const replaceAcceptedIds: string[] = [];
 
@@ -852,7 +861,7 @@ export function markAcceptedNewsItem(
       canonicalSourceScore: item
         ? getCanonicalSourceScoreForDedupe(item, context)
         : sourceQuality,
-      eventType: item ? canonicalEventType(item.title) : null,
+      eventType: item ? canonicalEventType(item) : null,
       angle: item ? classifyArticleAngle(item.title) : "news",
       entityIds,
       teamEntityIds: entityIdsByType(context, ["team"]),

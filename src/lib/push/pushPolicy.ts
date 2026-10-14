@@ -9,9 +9,6 @@ import type { DeliveryLogRow } from "@/lib/push/pushTypes";
 const MAX_10_MIN = 3;
 const MAX_60_MIN = 10;
 
-export const VIP_REGEX =
-  /\b(MÅL|MÅÅL|MÅÅÅL|KLART|KLAR FÖR|SILLY SEASON|JUST NU|MÅLSKYTT|MÅLSKYTTAR|NY KLUBB|KONTRAKT)\b/i;
-
 /* ==========================================================================
    DELIVERY POLICY HELPERS
    ========================================================================== */

@@ -1,3 +1,4 @@
+import { assessment } from "../editorial/fixtures";
 import { describe, expect, it } from "vitest";
 import { evaluatePushAudienceForNewsItem } from "@/lib/push/pushAudience";
 
@@ -65,6 +66,7 @@ describe("pushAudience", () => {
         {
           id: "news-1",
           title: "Charbel Eljas målskytt – men Öxnehaga förlorade",
+          editorial_assessment: assessment("Charbel Eljas målskytt – men Öxnehaga förlorade", "match-event"),
           url: "https://example.com/news-1",
           tags: [],
           sport: "football",
@@ -118,6 +120,7 @@ describe("pushAudience", () => {
         {
           id: "news-2",
           title: "Västerås SK målskytt i dramat",
+          editorial_assessment: assessment("Västerås SK målskytt i dramat", "match-event"),
           url: "https://example.com/news-2",
           tags: [],
           sport: "football",

@@ -97,6 +97,7 @@ export type BigNewsSignal = {
 };
 
 export type NormalizedArticle = {
+  editorial_assessment?: unknown;
   id: string;
   sport: EngineSport;
   title: string;

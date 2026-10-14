@@ -1,3 +1,4 @@
+import { hasEditorialPriority } from "@/lib/editorial/assessment";
 // src/lib/classification/sportSignals.ts
 
 import type { RankingNewsItem, Sport } from "@/lib/ranking/rankingTypes";
@@ -154,9 +155,7 @@ function buildSummaryText(item: RankingNewsItem): string {
     : "";
 }
 
-function buildTitleAndTagsText(item: RankingNewsItem): string {
-  return normalizeText(`${item.title ?? ""} ${(item.tags ?? []).join(" ")}`);
-}
+
 
 /**
  * Används för sportverifiering och sportdetektion.
@@ -199,19 +198,7 @@ export function hasSportContent(item: RankingNewsItem): boolean {
 }
 
 export function hasHardNewsSignal(item: RankingNewsItem): boolean {
-  const text = buildTitleAndTagsText(item);
-
-  return (
-    /\b(live|just nu|breaking|here we go|done deal|officiellt|official|klart|presenterad|confirmed)\b/.test(
-      text,
-    ) ||
-    /\b(goal|mal|mål|avgor|avgör|kvitterar|natar|nätar|malskytt|målskytt|assist)\b/.test(
-      text,
-    ) ||
-    /\b(starting xi|lineup|lineups|startelva|laguppstallning|laguppstallningar|confirmed xi|expected xi|team news)\b/.test(
-      text,
-    )
-  );
+  return hasEditorialPriority(item);
 }
 
 /* ==========================================================================
