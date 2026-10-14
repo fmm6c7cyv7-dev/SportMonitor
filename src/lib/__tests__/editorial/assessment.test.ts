@@ -61,7 +61,7 @@ describe("editorial semantic policy", () => {
     "Tre punkter: Det talar för AIK – efter succéstarten",
     "Rankingen: Årets fem bästa mål efter succén",
   ])("does not mark retrospective commentary as exceptional VIP success: %s", title => {
-    const item = {title, editorial_assessment: assessment(title, "success", {badge: "SUCCESS"})};
+    const item = {title, url: "https://example.com/retrospective-success", editorial_assessment: assessment(title, "success", {badge: "SUCCESS"})};
     expect(editorialBadge(item)).toBeNull();
     expect(editorialUrgency(item)).toBe(0);
     expect(isEditorialVip(item)).toBe(false);
