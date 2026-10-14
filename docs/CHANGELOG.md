@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.3.2] - 2026-10-14
+
+### Rättat
+- Uppdateringsdialog visas endast vid MAJOR- eller MINOR-höjning; PATCH-releaser är tysta. Tidigare visade dialoger för 6.3.1 visas inte igen efter 6.3.2.
+- VIP-status ger inte längre särskilda pushundantag; succé kan AI-granskas för VIP-märkning och ranking.
+
 ## [6.3.1] - 2026-10-14
 
 ### Tillagt
