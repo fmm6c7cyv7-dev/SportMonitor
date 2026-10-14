@@ -4,6 +4,7 @@ import packageLock from "../../../package-lock.json";
 import {
   RELEASE_VERSION,
   RELEASE_STORAGE_PREFIX,
+  releaseNoticeKey,
   WELCOME_STORAGE_KEY,
   createReleaseNoticeStore,
   getReleaseNoticeServerSnapshot,
@@ -49,7 +50,7 @@ describe("release version and acknowledgement", () => {
     expect(env.values.size).toBe(0);
     store.acknowledge();
     expect(env.values.get(WELCOME_STORAGE_KEY)).toBe("true");
-    expect(env.values.get(`${RELEASE_STORAGE_PREFIX}6.3.1`)).toBe("true");
+    expect(env.values.get(releaseNoticeKey("6.3.1"))).toBe("true");
     expect(store.snapshot()).toBe("hidden");
   });
   it("shows only the update to an existing user, then stays hidden after reopening", () => {
@@ -62,7 +63,20 @@ describe("release version and acknowledgement", () => {
   it("shows a new release after the old release was acknowledged", () => {
     const env = environment({[WELCOME_STORAGE_KEY]: "true"});
     createReleaseNoticeStore("6.3.1", env.environment).acknowledge();
-    expect(createReleaseNoticeStore("6.3.2", env.environment).snapshot()).toBe("update");
+    expect(createReleaseNoticeStore("6.3.2", env.environment).snapshot()).toBe("hidden");
+    expect(createReleaseNoticeStore("6.4.1", env.environment).snapshot()).toBe("update");
+    expect(createReleaseNoticeStore("7.0.1", env.environment).snapshot()).toBe("update");
+  });
+  it("inherits acknowledgement from a previously seen patch-specific release", () => {
+    const env = environment({[WELCOME_STORAGE_KEY]: "true", [`${RELEASE_STORAGE_PREFIX}6.3.1`]: "true"});
+    expect(createReleaseNoticeStore("6.3.2", env.environment).snapshot()).toBe("hidden");
+    expect(createReleaseNoticeStore("6.4.1", env.environment).snapshot()).toBe("update");
+  });
+  it("never repeats an acknowledged minor release for subsequent patches", () => {
+    const env = environment({[WELCOME_STORAGE_KEY]: "true"});
+    createReleaseNoticeStore("6.4.1", env.environment).acknowledge();
+    expect(createReleaseNoticeStore("6.4.2", env.environment).snapshot()).toBe("hidden");
+    expect(createReleaseNoticeStore("6.4.99", env.environment).snapshot()).toBe("hidden");
   });
   it("does not overwrite a newer release acknowledgement from an older tab", () => {
     const env = environment({[WELCOME_STORAGE_KEY]: "true"});
