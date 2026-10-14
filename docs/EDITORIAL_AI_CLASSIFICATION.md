@@ -39,6 +39,8 @@ Each ingest request shares a maximum of 40 model calls and 45 seconds of cumulat
 
 - Unit/integration tests cover misleading keywords, real positive events, spoofed source tags, title binding, malformed/ungrounded responses, HTTP errors, timeout, shared ranking/category/VIP behavior and pre-push ingest ordering/dedupe.
 - `SM_EDITORIAL_LIVE_QA=1 npm test -- src/lib/__tests__/editorial/live.test.ts --silent=false --reporter=verbose` opts into eight read-only real-model headline checks. This is skipped by default, requires Gateway authentication and makes no database writes or notifications.
+- Existing articles are eligible for a bounded catch-up pass only if both `published_at` and `fetched_at` are within the past 3 hours. The pass updates the same row (title-bound and NULL-only), never inserts duplicate URLs, never sends a retrospective push, and processes at most 3 candidates per ingest invocation. Historical articles are never backfilled.
+- In Vercel Functions, the OIDC token arrives on the internal `x-vercel-oidc-token` request header. The authenticated cron route passes it privately to the editorial budget; no token is logged, persisted, or returned.
 - Model quality is probabilistic; validate production summary counters and periodically review ambiguous headlines. Stored semantic decisions avoid different results between users or refreshes.
 
 ## Succé
