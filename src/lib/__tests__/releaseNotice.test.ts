@@ -85,7 +85,7 @@ describe("release version and acknowledgement", () => {
     current.acknowledge();
     old.acknowledge();
     expect(createReleaseNoticeStore("6.3.2", env.environment).snapshot()).toBe("hidden");
-    expect(env.values.get(`${RELEASE_STORAGE_PREFIX}6.3.1`)).toBe("true");
+    expect(env.values.get(releaseNoticeKey("6.3.1"))).toBe("true");
   });
   it("emits same-tab updates and supports remount without repeating acknowledgement", () => {
     const env = environment();
