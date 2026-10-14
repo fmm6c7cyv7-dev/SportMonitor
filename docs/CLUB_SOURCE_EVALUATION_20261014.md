@@ -103,3 +103,37 @@ The correct next implementation block is a controlled read-only probe from
 the deployed SportMonitor runtime or an authorized development environment;
 only after proven HTTP/XML parsing and scope filters should source registry
 entries and associated source profiles be enabled.
+
+## Live read-only runner findings — 2026-10-14
+
+The isolated GitHub Actions probe in PR #17 made HTTPS GET requests only,
+without ingest credentials, Supabase writes, editorial model calls or push.
+
+| Result | The Stacey West | FeanOnline |
+|---|---:|---:|
+| Response | HTTP 200 | HTTP 200 |
+| MIME | application/rss+xml | application/rss+xml |
+| RSS items | 5 | 88 |
+| Valid dated item links | 5 | 88 |
+| Items in most recent seven days | 5 | 84 |
+| Unique item URLs | 5 | 88 |
+| Simple title-filter scope warning | 0 | 1 |
+
+All item links pointed to their expected publisher host. Public production
+Supabase read-only URL-domain lookup returned **zero existing articles** for
+either domain, so URL-level exact overlap with those sources is zero as of
+the query, but **cross-source canonical/event similarity remains unmeasured**.
+
+**Editorial implications:** Stacey West has a manageable, low-volume feed but
+its non-league regional roundups and West Ham stories must not automatically
+receive Lincoln-specific relevance. FeanOnline's 84 articles in seven days
+must be constrained by source and article eligibility, not automatically
+displace Swedish Tier 1 news. The single simple scope keyword hit is **not**
+proof that other disallowed articles are absent (Dutch content needs more
+precise classification than English/Swedish title keywords).
+
+**Decision:** technical RSS transport/entry validation PASS; content
+classification, canonical entity linkage, duplicate-event simulation,
+mobile article accessibility and first-12/30 impact **NOT YET VERIFIED**.
+Do not activate either source in the production registry on RSS response
+alone. No source weights, favorites, VIP, push or app version changed.
