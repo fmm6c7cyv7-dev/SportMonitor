@@ -20,7 +20,7 @@ export function isEligibleClubSourceArticle(source: string, item: ClubSourceArti
   const tags = (item.tags ?? []).map(normalizeFilterText).join(" ");
   const path = normalizeFilterText(new URL(item.url ?? "https://invalid.example").pathname);
   const all = [title, summary, tags, path].join(" ");
-  const primaryIdentity = [title, path].join(" ");
+  const primaryIdentity = [title, path.replace(/-/g, " ")].join(" ");
 
   // Never let commercial, women's or academy/mixed-scope articles through.
   if (isWomensSportContent(all) ||
