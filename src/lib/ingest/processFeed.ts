@@ -12,6 +12,7 @@ import {
   scrapeVskHerrlag,
 } from "@/lib/scrape";
 import { isIrrelevantSport } from "@/lib/ingest/filterPolicy";
+import { isEligibleClubSourceArticle } from "@/lib/ingest/clubSourcePolicy";
 import {
   detectSportFromContent,
   hasSportContent,
@@ -733,7 +734,7 @@ export async function processFeedIngest(
   const relevantItems: PreparedFeedItem[] = [];
 
   for (const item of preparedItems) {
-    if (!isIrrelevantSport(item.combinedText)) {
+    if (!isIrrelevantSport(item.combinedText) && isEligibleClubSourceArticle(feed.name, item)) {
       relevantItems.push(item);
       continue;
     }
