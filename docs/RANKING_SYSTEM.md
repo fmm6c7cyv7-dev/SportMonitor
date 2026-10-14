@@ -233,6 +233,25 @@ Favorite matching may boost a sufficiently fresh article, but must not:
 
 ---
 
+## Club-relative source assessment (policy, not active weights)
+
+Do not rank sources by brand size or `fan_community` type alone. Evaluate
+club-specific reporting value, firsthand journalism, factual reliability and
+reader accessibility separately. A specialist publisher for Lincoln City or
+SC Heerenveen can have high club-specific value without inheriting the same
+weight for unrelated clubs. An official source has particular evidentiary
+authority for its own confirmed announcements, while specialist outlets can
+provide greater ongoing reporting depth. Commercial affiliate/editorial
+content needs article-level scrutiny. Mild ads are neutral; intrusive ads,
+mandatory registration and paywalls reduce user accessibility.
+
+This section establishes evaluation criteria only. **Do not change source
+weights or enable sources without measured impact, technical verification and
+regression tests.** The Swedish core, freshness, dedupe, ranking floors and
+VIP confirmation requirements remain higher-order rules.
+
+---
+
 ## Anti-cluster / source balancing
 
 The feed should avoid visual source clusters.

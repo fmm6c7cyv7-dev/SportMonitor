@@ -73,6 +73,24 @@ BBC Sport, The Athletic, etablerade nationella medier och relevanta specialistk�
 
 Authority ska inte väga tyngre än produktens svenska kärna.
 
+### Klubbrelativt källvärde
+
+En etablerad liten klubbredaktion eller supporterdriven specialpublikation kan
+värderas mycket högt för sitt eget lag. Klassningen `fan_community` innebär
+inte automatiskt låg journalistisk auktoritet. Bedöm **klubbträffsäkerhet,
+egen journalistik, verifierbarhet och läsbarhet separat**. Lagets officiella
+källa har starkast bevisvärde för egna bekräftade besked; den oberoende
+specialisten kan ge bättre löpande klubbbevakning.
+
+Måttlig reklam är neutral. Påträngande annonser, kommersiellt spelinnehåll,
+inloggningskrav och betalvägg påverkar läsarvärdet negativt, men ska inte
+förväxlas med att journalisten är opålitlig. Rykten blir aldrig VIP bara för
+att källan är högt värderad.
+
+Detta är en **framtida källutvärderingsprincip**, inte en ändring av
+rankingvikterna. Svensk core, aktualitet, dubbletter, källspridning,
+favoriter och push har företräde.
+
 ## 6. Liga- och lagrelevans
 
 En liga kan vara relevant av tre olika skäl:
