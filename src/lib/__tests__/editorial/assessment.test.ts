@@ -45,7 +45,27 @@ describe("editorial semantic policy", () => {
     expect(scoreBigNewsSignal(normalized).score).toBeGreaterThan(0);
     expect(buildHardNewsArticleIds([item])).toEqual([item.url]);
   });
-  it.each(["Succé för Leksand efter historisk finalseger", "SUCCÉ: Klubben tog sin första titel", "SUC­CE test".replace("­", "")])("nominates success terms for AI review: %s", title => {\n    expect(isEditorialCandidate({title})).toBe(true);\n  });\n  it("allows confirmed exceptional success to follow the existing VIP and ranking policy", () => {\n    const title = "Succé för Leksand efter historisk finalseger";\n    const item = {title, url: "https://example.com/success", editorial_assessment: assessment(title, "success", {badge: "SUCCESS"})};\n    expect(editorialBadge(item)?.label).toBe("SUCCÉ");\n    expect(isEditorialVip(item)).toBe(true);\n    expect(editorialUrgency(item)).toBe(12);\n    expect(buildHardNewsArticleIds([item])).toEqual([item.url]);\n  });\n  it("does not promote unconfirmed or unassessed success claims", () => {\n    const title = "Succé väntas för klubben";\n    expect(isEditorialVip({title})).toBe(false);\n    for (const status of ["rumor", "reported", "denied", "unclear"] as const) {\n      const item = {title, editorial_assessment: assessment(title, "success", {badge: "SUCCESS", status})};\n      expect(isEditorialVip(item)).toBe(false);\n      expect(editorialBadge(item)).toBeNull();\n    }\n  });\n  it("does not call a here-we-go report official or VIP", () => {
+  it.each(["Succé för Leksand efter historisk finalseger", "SUCCÉ: Klubben tog sin första titel", "SUCCE for club"])("nominates success terms for AI review: %s", title => {
+    expect(isEditorialCandidate({title})).toBe(true);
+  });
+  it("allows confirmed exceptional success to follow the existing VIP and ranking policy", () => {
+    const title = "Succé för Leksand efter historisk finalseger";
+    const item = {title, url: "https://example.com/success", editorial_assessment: assessment(title, "success", {badge: "SUCCESS"})};
+    expect(editorialBadge(item)?.label).toBe("SUCCÉ");
+    expect(isEditorialVip(item)).toBe(true);
+    expect(editorialUrgency(item)).toBe(12);
+    expect(buildHardNewsArticleIds([item])).toEqual([item.url]);
+  });
+  it("does not promote unconfirmed or unassessed success claims", () => {
+    const title = "Succé väntas för klubben";
+    expect(isEditorialVip({title})).toBe(false);
+    for (const status of ["rumor", "reported", "denied", "unclear"] as const) {
+      const item = {title, editorial_assessment: assessment(title, "success", {badge: "SUCCESS", status})};
+      expect(isEditorialVip(item)).toBe(false);
+      expect(editorialBadge(item)).toBeNull();
+    }
+  });
+  it("does not call a here-we-go report official or VIP", () => {
     const title = "Here we go: player to Milan";
     const item = {title, editorial_assessment: assessment(title, "transfer", {badge: "HERE_WE_GO", status: "reported"})};
     expect(editorialBadge(item)?.label).toBe("HERE WE GO 🚨");
