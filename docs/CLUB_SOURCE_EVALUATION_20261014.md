@@ -20,8 +20,13 @@ robots, rate limits, redirects and durable article URLs).
   clubs when relevant to Swedish-player/team context.
 - **Reader experience: provisional**. Advertising exists; public web article
   can be opened, but mobile intrusive-ad and paywall behavior remain untested.
-- **Technical ingest: unverified**. Live XML/RSS response, schema, publication
-  timestamps, endpoint stability and duplicate rate need a real fetch audit.
+- **RSS URL discovered:** https://staceywest.net/feed/ returned an
+  `application/rss+xml` content-type to the web retrieval layer on 2026-10-14.
+  The tool cannot display/parse XML feeds and reports unsupported content type.
+  This is **not** verification of feed entries, 200/304 status, freshness,
+  canonical URL quality or backend runtime compatibility.
+- **Technical ingest: blocked pending XML parse** and repeated runtime fetch;
+  publication timestamps, endpoint stability and duplicate rate remain unknown.
 - **Decision: candidate, not yet active**.
 
 ## FeanOnline — SC Heerenveen
@@ -40,9 +45,22 @@ robots, rate limits, redirects and durable article URLs).
   is a review flag, not an automatic exclusion; test actual article pages.
 - **Mixed sport scope:** women's content has separate navigation; ingest must
   reject it in men's feed. Exclude promotional and generic match-odds posts.
-- **Technical ingest: unverified**. RSS label exists, but feed URL, XML
-  validity, timestamps, link access and runtime fetch reliability are not yet
-  independently proven.
+- **RSS URL discovered:** FeanOnline's own visible RSS link resolves to
+  https://www.feanonline.nl/feed/news.rss (site footer). On 2026-10-14
+  direct web retrieval reported cache miss, so XML, HTTP response status,
+  entry dates, GUID and canonical article URLs **remain unverified**.
+- **Article accessibility sample:** a publicly retrievable item
+  https://www.feanonline.nl/linday-gevraagd-naar-transfer-dat-is-alles-wat-ik-kan-zeggen/
+  contains a readable article with headline, timestamp, author, original
+  source credit ('bron: Voetbal International'), summary and original citation
+  without requiring login in the retrieved HTML view. It describes Swedish
+  player Marcus Linday and Braga transfer interest as a report, **not
+  confirmed VIP**. One example does not prove the absence of mobile overlays.
+- **Scope warning:** mixed site navigation contains women's football; article
+  selection must exclude those URLs. The publisher's editorial archive also
+  contains bookmaker/odds promotions and unrelated consumer advertorials;
+  exclude these from ingestion.
+- **Technical ingest: blocked pending XML parse** and stable runtime fetch.
 - **Decision: candidate, not yet active**.
 
 ## Technical onboarding gate (both)
@@ -62,3 +80,26 @@ robots, rate limits, redirects and durable article URLs).
 **Approve the club-relative assessment principle. Hold feed activation and
 score changes until the technical/onboarding gates pass.** No claim is made
 that a specific RSS endpoint or automated fetch has been validated.
+
+## Verified observations from follow-up (2026-10-14)
+
+| Gate | The Stacey West | FeanOnline |
+|---|---|---|
+| Exact publisher RSS link | WordPress-compatible /feed/ observed as RSS MIME | Explicit site footer link /feed/news.rss |
+| XML entry parsing | NOT VERIFIED | NOT VERIFIED |
+| HTTP 200, timestamps, GUID, links | NOT VERIFIED | NOT VERIFIED |
+| Accessible article evidence | Public article indexed; login experience untested | One article readable without login via web retrieval |
+| Swedish-player value | Requires canonical club/player relation audit | Marcus Linday article demonstrably relevant |
+| Men's scope | Exclude mixed/general content | Explicit women's channel, must filter |
+| Ads/paywall mobile QA | Untested | Untested; site discloses ads/affiliates |
+| Seven-day net-new / duplicates | NOT MEASURED | NOT MEASURED |
+| Activate in ingest | NO | NO |
+
+**Why no activation:** This environment's website fetcher rejects RSS XML
+presentation for Stacey West and cannot retrieve FeanOnline's XML. The
+container's outbound DNS is also unavailable. These conditions prevent a
+valid 7-day article-level dry run and would make an activation speculative.
+The correct next implementation block is a controlled read-only probe from
+the deployed SportMonitor runtime or an authorized development environment;
+only after proven HTTP/XML parsing and scope filters should source registry
+entries and associated source profiles be enabled.
