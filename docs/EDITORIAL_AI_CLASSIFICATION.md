@@ -20,7 +20,7 @@ The news list, top highlight, ranking urgency/big-news signals, event categories
 - New/extended contracts require a confirmed agreement. Denials, hypothetical agreements and ambiguous headlines receive no contract badge or keyword priority.
 - Confirmed club departures display **LÄMNAR KLUBBEN**.
 - Here-we-go reports can display **HERE WE GO** and receive bounded ranking priority, while retaining `reported` status. They do not become official or VIP automatically.
-- Rumor labels are allowed only for interpreted reported/rumor transfer, departure, contract or management events. Rumors receive no special urgency/VIP.
+- Rumors remain in the ordinary feed without any **RYKTE** or VIP-style badge. AI can retain `RUMOR` in stored assessment for internal context, but neither rumor nor reported status grants urgency, VIP, hard-news access or special visual treatment. Direct favorites still retain their normal star marker. The explicit HERE WE GO reported transfer label/ranking is the sole existing exception.
 - Confirmed relevant transfer/departure/contract/management/goal events, or explicitly interpreted breaking events, are eligible for existing VIP handling. AI does not choose recipients: favorite matching, men's scope, sport, freshness, push subscription, dedupe and rate limits continue to decide delivery.
 - Local relevance can still influence top-highlight selection, but does not fabricate a JUST NU badge.
 - The independent `/api/top` Google RSS path has no saved assessment. Its positive keyword urgency was removed; recency and existing negative editorial penalties remain.

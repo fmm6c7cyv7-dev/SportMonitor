@@ -46,7 +46,9 @@ export function isEditorialVip(item: EditorialItem): boolean {
 export function editorialBadge(item: EditorialItem): {label: string; variant: "justnu" | "live" | "mal" | "officiellt"} | null {
   const a = getEditorialAssessment(item);
   if (!a || a.status === "denied" || a.status === "unclear" || !a.badge) return null;
-  if (a.badge === "RUMOR") return ["rumor", "reported"].includes(a.status) && ["transfer", "departure", "contract", "management"].includes(a.category) ? {label: "RYKTE", variant: "live"} : null;
+  // Rumors remain ordinary feed items: their stored assessment is informative,
+  // but it never grants a VIP-style visual badge or editorial urgency.
+  if (a.badge === "RUMOR") return null;
   if (a.badge === "HERE_WE_GO") return ["confirmed", "reported"].includes(a.status) && a.category === "transfer" ? {label: "HERE WE GO 🚨", variant: "justnu"} : null;
   if (a.status !== "confirmed") return null;
   const allowed: Partial<Record<NonNullable<EditorialAssessment["badge"]>, readonly string[]>> = {
