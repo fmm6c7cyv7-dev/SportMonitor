@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.3.4] - 2026-10-14
+
+### Rättat
+- Rykten visas inte längre med en framträdande RYKTE-etikett som kan förväxlas med VIP. Artiklarna behålls i det vanliga flödet, inklusive eventuell favoritmarkering; bekräftade VIP-händelser och HERE WE GO påverkas inte.
+
 ## [6.3.3] - 2026-10-14
 
 ### Rättat

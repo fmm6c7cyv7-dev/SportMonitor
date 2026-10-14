@@ -65,6 +65,22 @@ describe("editorial semantic policy", () => {
       expect(editorialBadge(item)).toBeNull();
     }
   });
+  it.each([
+    ["rumor", "transfer"],
+    ["reported", "transfer"],
+    ["reported", "departure"],
+    ["rumor", "contract"],
+    ["reported", "management"],
+  ] as const)("keeps %s %s rumors unbadged and outside VIP, also with favorite match", (status, category) => {
+    const title = "Reported club move remains unconfirmed";
+    const item = {title, favorite_match: true, url: "https://example.com/rumor",
+      editorial_assessment: assessment(title, category, {status, badge: "RUMOR"})};
+    expect(getEditorialAssessment(item)?.badge).toBe("RUMOR");
+    expect(editorialBadge(item)).toBeNull();
+    expect(editorialUrgency(item)).toBe(0);
+    expect(isEditorialVip(item)).toBe(false);
+    expect(buildHardNewsArticleIds([item])).toEqual([]);
+  });
   it("does not call a here-we-go report official or VIP", () => {
     const title = "Here we go: player to Milan";
     const item = {title, editorial_assessment: assessment(title, "transfer", {badge: "HERE_WE_GO", status: "reported"})};
