@@ -1066,10 +1066,25 @@ export async function handleNewsFeedRequest(req: NextRequest) {
       limit: safeLimit,
     });
 
+    // Expose stable story identity for the existing local read/unread state.
+    // This changes no layout or ranking and retains compatibility with IDs
+    // stored before story grouping was introduced.
+    const storyMembersById = new Map<string, string[]>();
+    for (const [memberId, storyId] of storyIndex.storyByArticleId) {
+      const members = storyMembersById.get(storyId) ?? [];
+      members.push(memberId);
+      storyMembersById.set(storyId, members);
+    }
     const returned = applyFavoritesFirstPresentation(
       canonicalRanked,
       favoritesFirst,
-    );
+    ).map((item) => {
+      const articleId = item.id ?? item.url;
+      const storyId = storyIndex.storyByArticleId.get(articleId);
+      return storyId
+        ? { ...item, story_id: storyId, story_member_ids: storyMembersById.get(storyId) ?? [] }
+        : item;
+    });
 
     return NextResponse.json(
       {
