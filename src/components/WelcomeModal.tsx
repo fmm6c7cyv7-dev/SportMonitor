@@ -53,7 +53,7 @@ export default function WelcomeModal() {
         {welcome ? "SportMonitor" : "Nytt i SportMonitor"} · v{RELEASE_VERSION}
       </p>
       <h2 id={titleId} className="text-xl font-bold leading-tight text-white">
-        {welcome ? <>Välkommen till Sport<span style={{ color: brandGold }}>Monitor</span></> : "Smartare koll på sportnyheterna"}
+        {welcome ? <>Välkommen till Sport<span style={{ color: brandGold }}>Monitor</span></> : "Färre upprepningar i nyhetsflödet"}
       </h2>
       {welcome ? (
         <>
@@ -65,13 +65,13 @@ export default function WelcomeModal() {
             <p><b className="text-slate-100">⚡ Realtid:</b> Sidan uppdateras automatiskt var 45:e sekund för att du inte ska missa något.</p>
           </div>
           <h3 className="mb-2 border-t border-slate-700 pt-4 text-sm font-semibold" style={{ color: brandGold }}>
-            Nytt: smartare koll på sportnyheterna
+            Nytt: färre upprepningar i nyhetsflödet
           </h3>
         </>
       ) : null}
       <div id={descriptionId} className="mt-3 space-y-3 text-sm leading-relaxed text-slate-300">
-        <p>Vi har byggt en ny AI-granskning för <strong className="text-white">breaking och transfer</strong>. Rubriken och tillgänglig ingress tolkas innan en artikel får en särskild markering eller extra prioritet.</p>
-        <p>Att en spelare <strong className="text-white">lämnar matchen skadad</strong> ska inte förväxlas med att han lämnar klubben. Rykten skiljs från bekräftade besked.</p>
+        <p>Vi har förbättrat hur SportMonitor hittar <strong className="text-white">flera artiklar om samma händelse</strong>. Vårt mål är att visa den mest relevanta källan och minska upprepningar i flödet.</p>
+        <p>En ny artikel från en annan källa kan ersätta en äldre version. <strong className="text-white">Väsentliga uppföljningar</strong> ska fortfarande få plats. AI-bedömningen är försiktig och ersätter inte våra vanliga regler för relevans, favoriter eller VIP.</p>
       </div>
       <button
         type="button"

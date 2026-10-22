@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.4.1] - 2026-10-22
+
+### Tillagt
+- Begränsad AI-jämförelse vid ingest kan koppla olika publicisters artiklar till samma konkreta nyhetshändelse. Låg rubriklikhet används enbart för att nominera en jämförelse; kontext och tydligt bekräftat likvärdigt innehåll krävs.
+- En vald huvudartikel per bekräftad dubblettgrupp i API-flödet, utan att originalartiklar raderas. Väsentliga uppföljningar hålls separat.
+- Beständig händelsekoppling bevarar serverns hide-read-semantik vid källbyte; push begränsas per mottagare så samma händelse inte skickas upprepade gånger till den som redan fått en notis.
+
+### Rättat
+- Betydelsebärande rubriktext efter tankstreck behålls vid deduplicering, exempelvis Leksands stämning.
+- Separat begränsad budget för händelse-AI skyddar befintlig redaktionell AI-klassificering.
+
+### Oförändrat
+- Inga förändringar av frontendens kortlayout, rankingvikter, källbalansering, favorit-/VIP-regler eller åldersgränser. Ny tabell news_story_members kräver separat migrering före produktionsaktivering.
+
 All notable changes to this project will be documented in this file.
 
 ## [6.3.6] - 2026-10-14

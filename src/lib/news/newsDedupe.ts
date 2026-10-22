@@ -67,15 +67,12 @@ export function normalizeToken(value: string): string {
     .trim();
 }
 
-function stripSourceSuffix(value: string): string {
-  return value.replace(/\s+[-–—]\s+[^-–—]{2,40}$/u, "");
-}
-
 export function normalizeTitle(value: string): string {
+  // Dash clauses frequently carry the event itself ("– stäms på en halv miljon").
+  // Do not strip them as if every dash introduced a publisher suffix.
   const raw = (value ?? "").trim();
-  const noSuffix = stripSourceSuffix(raw);
 
-  return foldDiacritics(noSuffix)
+  return foldDiacritics(raw)
     .toLowerCase()
     .trim()
     .replace(/\s+/g, " ")

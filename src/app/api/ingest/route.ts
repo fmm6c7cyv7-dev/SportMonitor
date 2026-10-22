@@ -33,7 +33,13 @@ export async function GET(req: Request) {
   }> = [];
 
   // Runtime OIDC is attached to the Vercel Function request headers.
-  const editorialBudget = createEditorialBudget(req.headers.get("x-vercel-oidc-token") ?? undefined);
+  const oidcToken = req.headers.get("x-vercel-oidc-token") ?? undefined;
+  const editorialBudget = createEditorialBudget(oidcToken);
+  // The separate cost ceiling guarantees that high editorial traffic cannot
+  // silently exhaust all semantic comparison capacity.
+  const storyBudget = createEditorialBudget(oidcToken);
+  storyBudget.remaining = 8;
+  storyBudget.activeMs = 18_000;
   let editorialBackfill: Awaited<ReturnType<typeof backfillRecentEditorialAssessments>> | null = null;
   try {
     editorialBackfill = await backfillRecentEditorialAssessments(supabase, editorialBudget);
@@ -43,7 +49,7 @@ export async function GET(req: Request) {
 
   for (const feed of FEEDS) {
     try {
-      const result = await processFeedIngest(feed, supabase, aliasRows, editorialBudget);
+      const result = await processFeedIngest(feed, supabase, aliasRows, editorialBudget, storyBudget);
 
       totalPushSent += result.pushSent;
       totalInserted += result.insertedCount;
@@ -61,10 +67,12 @@ export async function GET(req: Request) {
   }
 
   console.info("[editorial] ingest summary", editorialBudget.stats);
+  console.info("[stories] ingest summary", storyBudget.stats);
 
   return NextResponse.json({
     ok: true,
     editorial: editorialBudget.stats,
+    stories: storyBudget.stats,
     editorialBackfill,
     inserted: totalInserted,
     pushSent: totalPushSent,

@@ -1,4 +1,5 @@
 import { classifyEditorialArticle, createEditorialBudget, type EditorialBudget } from "@/lib/editorial/classifier";
+import { linkNewArticlesToStories } from "@/lib/news/storyAi";
 // src/lib/ingest/processFeed.ts
 
 import { parseRssFeed } from "@/lib/rss";
@@ -674,6 +675,7 @@ export async function processFeedIngest(
   supabase: SupabaseServiceClient,
   aliasRows: EntityAliasRows,
   editorialBudget: EditorialBudget = createEditorialBudget(),
+  storyBudget: EditorialBudget = editorialBudget,
 ): Promise<ProcessFeedResult> {
   const debug = createEmptyFeedIngestDebug();
 
@@ -830,6 +832,39 @@ export async function processFeedIngest(
   const entityLinks = buildEntityLinks(newlyCreatedRows, parsedItems);
   await upsertEntityLinks(supabase, entityLinks);
 
+  // Story identity is additive and optional: no failures in the AI/storage
+  // path may prevent ingestion or change the established editorial ranking.
+  let duplicateStoryIds = new Set<string>();
+  try {
+    const parsedByUrl = new Map(parsedItems.map((item) => [item.dbRow.url, item.dbRow]));
+    const storyRows = newlyCreatedRows.flatMap((row) => {
+      const original = parsedByUrl.get(row.url);
+      if (!original || !row.published_at) return [];
+      return [{
+        id: row.id, url: row.url, published_at: row.published_at,
+        title: original.title, source: original.source, sport: original.sport,
+      }];
+    });
+    duplicateStoryIds = await linkNewArticlesToStories(
+      supabase,
+      storyRows,
+      parsedItems.map((item) => ({
+        url: item.dbRow.url,
+        summary: item.summary,
+        detected: item.detected,
+      })),
+      storyBudget,
+    );
+  } catch (error) {
+    console.warn("[stories] semantic linking unavailable", error instanceof Error ? error.message : "unknown");
+  }
+
+  if (duplicateStoryIds.size > 0) {
+    storyBudget.stats.story_duplicate_rows = (storyBudget.stats.story_duplicate_rows ?? 0) + duplicateStoryIds.size;
+  }
+
+  // Push recipient dedupe is handled per device by pushDispatch. Never
+  // globally suppress a later article for subscribers who missed the first.
   const pushSent = await dispatchPushForRows(newlyCreatedRows);
 
   return {
