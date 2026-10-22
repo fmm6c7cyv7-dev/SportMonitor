@@ -835,9 +835,18 @@ export async function processFeedIngest(
   // path may prevent ingestion or change the established editorial ranking.
   let duplicateStoryIds = new Set<string>();
   try {
+    const parsedByUrl = new Map(parsedItems.map((item) => [item.dbRow.url, item.dbRow]));
+    const storyRows = newlyCreatedRows.flatMap((row) => {
+      const original = parsedByUrl.get(row.url);
+      if (!original || !row.published_at) return [];
+      return [{
+        id: row.id, url: row.url, published_at: row.published_at,
+        title: original.title, source: original.source, sport: original.sport,
+      }];
+    });
     duplicateStoryIds = await linkNewArticlesToStories(
       supabase,
-      newlyCreatedRows,
+      storyRows,
       parsedItems,
       editorialBudget,
     );
