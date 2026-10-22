@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.4.2] - 2026-10-22
+
+### Rättat
+- Lokal lässtatus följer nu samma identifierade nyhetshändelse när backend väljer en annan publicist som huvudkälla. Redan sparade artikel-ID:n fungerar fortsatt.
+- Ingen ändring av nyhetsurval, favoritregler, VIP, push eller flödets utseende.
+
 ## [6.4.1] - 2026-10-22
 
 ### Tillagt
