@@ -4,6 +4,7 @@ import { editorialBadge } from "@/lib/editorial/assessment";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { NewsItem, Sport } from "@/lib/types";
+import { isNewsStoryRead, newsReadKeys } from "@/lib/news/storyRead";
 import Badge from "@/components/Badge";
 import EnablePushButton from "@/components/EnablePushButton";
 import ToggleSwitch from "@/components/ToggleSwitch";
@@ -792,8 +793,7 @@ export default function NewsColumn({
 
     if (settings.hideRead) {
       filtered = filtered.filter((item) => {
-        const id = String(item.id ?? item.url);
-        return !readIds.has(id);
+        return !isNewsStoryRead(item, readIds);
       });
     }
 
@@ -811,8 +811,8 @@ export default function NewsColumn({
     entityType !== "all" || favInput.trim().length > 0;
 
   function handleMarkAsRead(item: NewsItem): void {
-    const id = String(item.id ?? item.url);
-    const newReadIds = new Set(readIds).add(id);
+    const newReadIds = new Set(readIds);
+    for (const key of newsReadKeys(item)) newReadIds.add(key);
 
     setReadIds(newReadIds);
     localStorage.setItem(readItemsKey(), JSON.stringify(Array.from(newReadIds)));
