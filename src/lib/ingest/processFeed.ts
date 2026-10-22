@@ -859,10 +859,13 @@ export async function processFeedIngest(
     console.warn("[stories] semantic linking unavailable", error instanceof Error ? error.message : "unknown");
   }
 
-  // Re-reporting an already identified story must not produce a second push.
-  const pushSent = await dispatchPushForRows(
-    newlyCreatedRows.filter((row) => !duplicateStoryIds.has(row.id)),
-  );
+  if (duplicateStoryIds.size > 0) {
+    storyBudget.stats.story_duplicate_rows = (storyBudget.stats.story_duplicate_rows ?? 0) + duplicateStoryIds.size;
+  }
+
+  // Push recipient dedupe is handled per device by pushDispatch. Never
+  // globally suppress a later article for subscribers who missed the first.
+  const pushSent = await dispatchPushForRows(newlyCreatedRows);
 
   return {
     feedName: feed.name,
