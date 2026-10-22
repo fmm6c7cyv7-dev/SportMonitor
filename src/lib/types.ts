@@ -19,6 +19,9 @@ export type FavoriteEntityType = "team" | "player" | "league" | "staff";
 export type NewsItem = {
   editorial_assessment?: unknown;
   id?: string | number;
+  /** Stable event identity for AI-confirmed interchangeable source articles. */
+  story_id?: string;
+  story_member_ids?: string[];
   url: string;
   title: string;
   source: string;
