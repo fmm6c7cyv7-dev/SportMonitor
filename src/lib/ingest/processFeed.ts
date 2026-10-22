@@ -847,7 +847,11 @@ export async function processFeedIngest(
     duplicateStoryIds = await linkNewArticlesToStories(
       supabase,
       storyRows,
-      parsedItems,
+      parsedItems.map((item) => ({
+        url: item.dbRow.url,
+        summary: item.summary,
+        detected: item.detected,
+      })),
       editorialBudget,
     );
   } catch (error) {
