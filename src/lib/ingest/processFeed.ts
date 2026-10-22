@@ -1,4 +1,5 @@
 import { classifyEditorialArticle, createEditorialBudget, type EditorialBudget } from "@/lib/editorial/classifier";
+import { linkNewArticlesToStories } from "@/lib/news/storyAi";
 // src/lib/ingest/processFeed.ts
 
 import { parseRssFeed } from "@/lib/rss";
@@ -830,7 +831,24 @@ export async function processFeedIngest(
   const entityLinks = buildEntityLinks(newlyCreatedRows, parsedItems);
   await upsertEntityLinks(supabase, entityLinks);
 
-  const pushSent = await dispatchPushForRows(newlyCreatedRows);
+  // Story identity is additive and optional: no failures in the AI/storage
+  // path may prevent ingestion or change the established editorial ranking.
+  let duplicateStoryIds = new Set<string>();
+  try {
+    duplicateStoryIds = await linkNewArticlesToStories(
+      supabase,
+      newlyCreatedRows,
+      parsedItems,
+      editorialBudget,
+    );
+  } catch (error) {
+    console.warn("[stories] semantic linking unavailable", error instanceof Error ? error.message : "unknown");
+  }
+
+  // Re-reporting an already identified story must not produce a second push.
+  const pushSent = await dispatchPushForRows(
+    newlyCreatedRows.filter((row) => !duplicateStoryIds.has(row.id)),
+  );
 
   return {
     feedName: feed.name,
