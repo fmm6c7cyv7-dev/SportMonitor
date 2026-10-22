@@ -1066,10 +1066,23 @@ export async function handleNewsFeedRequest(req: NextRequest) {
       limit: safeLimit,
     });
 
+    // Expose story identity only for confirmed interchangeable source articles.
+    // This keeps local read-state stable without changing ranking or layout.
+    const storyMembersById = new Map<string, string[]>();
+    for (const [memberId, storyId] of storyIndex.storyByArticleId) {
+      const members = storyMembersById.get(storyId) ?? [];
+      members.push(memberId);
+      storyMembersById.set(storyId, members);
+    }
     const returned = applyFavoritesFirstPresentation(
       canonicalRanked,
       favoritesFirst,
-    );
+    ).map((item) => {
+      const storyId = storyIndex.storyByArticleId.get(item.id ?? item.url);
+      return storyId
+        ? { ...item, story_id: storyId, story_member_ids: storyMembersById.get(storyId) ?? [] }
+        : item;
+    });
 
     return NextResponse.json(
       {
