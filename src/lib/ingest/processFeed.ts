@@ -675,6 +675,7 @@ export async function processFeedIngest(
   supabase: SupabaseServiceClient,
   aliasRows: EntityAliasRows,
   editorialBudget: EditorialBudget = createEditorialBudget(),
+  storyBudget: EditorialBudget = editorialBudget,
 ): Promise<ProcessFeedResult> {
   const debug = createEmptyFeedIngestDebug();
 
@@ -852,7 +853,7 @@ export async function processFeedIngest(
         summary: item.summary,
         detected: item.detected,
       })),
-      editorialBudget,
+      storyBudget,
     );
   } catch (error) {
     console.warn("[stories] semantic linking unavailable", error instanceof Error ? error.message : "unknown");
