@@ -1,6 +1,7 @@
 // src/lib/feed/newsFeedRequest.ts
 
 import { isMensScopeArticle } from "@/lib/ingest/filterPolicy";
+import { collapseConfirmedStories, loadStoryIndex, suppressReadStories } from "@/lib/news/storyPresentation";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { supabaseService } from "@/lib/supabase";
@@ -849,12 +850,22 @@ export async function handleNewsFeedRequest(req: NextRequest) {
 
     items = items.filter(isMensScopeArticle);
 
+    // Stable story membership survives source replacement and is shared across
+    // API reads. Missing migration safely falls back to existing behavior.
+    const storyIndex = await loadStoryIndex(
+      supabase,
+      items.map((item) => item.id).filter((id): id is string => Boolean(id)),
+    );
+
     const newsEntityContext = await loadNewsEntityContext(supabase, items);
     const newsEntityIdsByNewsId = newsEntityContext.entityIdsByNewsId;
     const newsEntitiesByNewsId = newsEntityContext.entitiesByNewsId;
 
     if (hideRead && deviceId && items.length > 0) {
-      const itemIds = items.map((item) => item.id).filter(Boolean) as string[];
+      const itemIds = Array.from(new Set([
+        ...items.map((item) => item.id).filter(Boolean) as string[],
+        ...storyIndex.memberIds,
+      ]));
       const seenIds = new Set<string>();
 
       const { data: seenData, error: seenError } = await supabase
@@ -868,7 +879,7 @@ export async function handleNewsFeedRequest(req: NextRequest) {
           seenIds.add(row.news_item_id);
         }
 
-        items = items.filter((item) => !item.id || !seenIds.has(item.id));
+        items = suppressReadStories(items, seenIds, storyIndex.storyByArticleId);
         seenArticlesCount = seenIds.size;
       }
     }
@@ -992,13 +1003,20 @@ export async function handleNewsFeedRequest(req: NextRequest) {
         })
       : accepted;
 
+    // A confirmed story receives one source card. Preserve unread pushed cards
+    // when an older source was already delivered to this device.
+    const storyCollapsedAccepted = collapseConfirmedStories(
+      acceptedWithForcedPushedItems,
+      storyIndex.storyByArticleId,
+      unreadPushedIdsInCurrentItems,
+    );
     const regionalEligibilityHardNewsItemKeys = new Set(
-      buildHardNewsArticleIds(acceptedWithForcedPushedItems),
+      buildHardNewsArticleIds(storyCollapsedAccepted),
     );
 
     const acceptedAfterRegionalSourceEligibility =
       filterAcceptedItemsByRegionalSourceEligibility(
-        acceptedWithForcedPushedItems,
+        storyCollapsedAccepted,
         {
           regionKey: geo.regionKey ?? null,
           favoriteEntityIds: new Set(
