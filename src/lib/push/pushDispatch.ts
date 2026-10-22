@@ -2,6 +2,7 @@
 
 import { supabaseService } from "@/lib/supabase";
 import { sendWebPush } from "@/lib/pushServer";
+import { loadNotifiedStoryDevices } from "@/lib/push/pushStoryDedup";
 import { buildNewsFeed, FEED_COLUMN_LIMIT } from "@/lib/news/feedService";
 import { evaluatePushAudienceForNewsItem } from "@/lib/push/pushAudience";
 import {
@@ -89,6 +90,14 @@ export async function dispatchPushForNewsItem(newsItemId: string) {
 
   const deliveryLog = (deliveryLogData ?? []) as DeliveryLogRow[];
 
+  // AI-confirmed re-reporting may change the displayed source, not the story.
+  // Check delivery per device; a different subscriber may still need this news.
+  const notifiedStoryDevices = await loadNotifiedStoryDevices(
+    supabase,
+    newsItemId,
+    feedEligibleDeviceIds,
+  );
+
   /* ========================================================================
      6. SEND PUSHES
      ======================================================================== */
@@ -108,6 +117,10 @@ export async function dispatchPushForNewsItem(newsItemId: string) {
     }
 
     if (hasAlreadyReceivedNews(deliveryLog, subscription.device_id, news.id)) {
+      continue;
+    }
+
+    if (notifiedStoryDevices.has(subscription.device_id)) {
       continue;
     }
 
