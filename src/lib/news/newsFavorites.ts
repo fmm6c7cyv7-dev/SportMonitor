@@ -270,19 +270,23 @@ function getBrowseSeed(entityId: string): BrowseSeed | undefined {
 
 function getBrowseSeedsForMeta(meta: EntityMetaRow): BrowseSeed[] {
   const exact = getBrowseSeed(meta.id);
-  if (exact) {
-    return [exact];
-  }
-
   const normalizedName = normalizeToken(meta.name);
-  if (!normalizedName) {
-    return [];
+
+  const identityMatches = normalizedName
+    ? Array.from(BROWSE_SEED_BY_ID.values()).filter(
+        (seed) =>
+          seed.type === meta.type &&
+          normalizeToken(seed.name) === normalizedName,
+      )
+    : [];
+
+  if (!exact) {
+    return identityMatches;
   }
 
-  return Array.from(BROWSE_SEED_BY_ID.values()).filter(
-    (seed) =>
-      seed.type === meta.type &&
-      normalizeToken(seed.name) === normalizedName,
+  const merged = [exact, ...identityMatches];
+  return merged.filter(
+    (seed, index) => merged.findIndex((candidate) => candidate.id === seed.id) === index,
   );
 }
 
