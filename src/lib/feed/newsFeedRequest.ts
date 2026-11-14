@@ -714,7 +714,12 @@ export function buildRouteMeta(args: {
    ROUTE
    ========================================================================== */
 
-export async function handleNewsFeedRequest(req: NextRequest) {
+export type NewsFeedCandidateCache = Map<string, DbItem[]>;
+
+export async function handleNewsFeedRequest(
+  req: NextRequest,
+  candidateCache?: NewsFeedCandidateCache,
+) {
   try {
     const sportRaw = req.nextUrl.searchParams.get("sport");
     const sport = (sportRaw ?? "").trim().toLowerCase();
@@ -817,18 +822,25 @@ export async function handleNewsFeedRequest(req: NextRequest) {
     const supabase = supabaseService();
     const fetchLimit = Math.min(safeLimit * FETCH_MULTIPLIER, 200);
 
-    const { data, error } = await supabase
-      .from("news_items")
-      .select("id,sport,title,url,source,published_at,fetched_at,tags,priority,editorial_assessment")
-      .eq("sport", safeSport)
-      .order("published_at", { ascending: false })
-      .limit(fetchLimit);
+    const candidateKey = `${safeSport}:${fetchLimit}`;
+    let candidates = candidateCache?.get(candidateKey);
+    if (!candidates) {
+      const { data, error } = await supabase
+        .from("news_items")
+        .select("id,sport,title,url,source,published_at,fetched_at,tags,priority,editorial_assessment")
+        .eq("sport", safeSport)
+        .order("published_at", { ascending: false })
+        .limit(fetchLimit);
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      candidates = (data ?? []) as DbItem[];
+      candidateCache?.set(candidateKey, candidates);
     }
 
-    let items = (data ?? []) as DbItem[];
+    let items = candidates;
     let seenArticlesCount = 0;
 
     const { pushedItems, pushedUnreadIds } = shouldUseDevicePersonalization

@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { handleNewsFeedRequest } from "@/lib/feed/newsFeedRequest";
+import { handleNewsFeedRequest, type NewsFeedCandidateCache } from "@/lib/feed/newsFeedRequest";
 
 export const FEED_COLUMN_LIMIT = 30;
 
@@ -10,6 +10,7 @@ type BuildNewsFeedArgs = {
   hideRead?: boolean;
   personalized?: boolean;
   includeDebug?: boolean;
+  candidateCache?: NewsFeedCandidateCache;
   favoriteTokens?: string[];
   debugCity?: string | null;
   geoLat?: number | null;
@@ -81,7 +82,7 @@ export async function buildNewsFeed(args: BuildNewsFeedArgs) {
     { headers },
   );
 
-  const response = await handleNewsFeedRequest(request);
+  const response = await handleNewsFeedRequest(request, args.candidateCache);
   const json = (await response.json()) as NewsRouteResponse;
 
   if (!response.ok) {

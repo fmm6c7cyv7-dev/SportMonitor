@@ -2,6 +2,7 @@ import { classifyEditorialArticle, createEditorialBudget, type EditorialBudget }
 import { linkNewArticlesToStories } from "@/lib/news/storyAi";
 // src/lib/ingest/processFeed.ts
 
+import type { NewsFeedCandidateCache } from "@/lib/feed/newsFeedRequest";
 import { parseRssFeed } from "@/lib/rss";
 import { dispatchPushForNewsItem } from "@/lib/pushDispatch";
 import { auditFavoriteDeliveryForNewsItem } from "@/lib/audit/favoriteDeliveryAudit";
@@ -647,8 +648,10 @@ async function dispatchPushForRows(newsRows: NewsRow[]): Promise<number> {
       continue;
     }
 
+    // Share only recent articles. The audit still reads the delivery log after push.
+    const candidateCache: NewsFeedCandidateCache = new Map();
     try {
-      const result = await dispatchPushForNewsItem(row.id);
+      const result = await dispatchPushForNewsItem(row.id, candidateCache);
       if (result?.sent) {
         dispatched += result.sent;
       }
@@ -657,7 +660,7 @@ async function dispatchPushForRows(newsRows: NewsRow[]): Promise<number> {
     }
 
     try {
-      await auditFavoriteDeliveryForNewsItem(row.id);
+      await auditFavoriteDeliveryForNewsItem(row.id, candidateCache);
     } catch (error) {
       console.error("Favorite delivery audit failed:", row.id, error);
     }
