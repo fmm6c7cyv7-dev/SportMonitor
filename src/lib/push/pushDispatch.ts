@@ -3,6 +3,7 @@
 import { supabaseService } from "@/lib/supabase";
 import { sendWebPush } from "@/lib/pushServer";
 import { loadNotifiedStoryDevices } from "@/lib/push/pushStoryDedup";
+import type { NewsFeedCandidateCache } from "@/lib/feed/newsFeedRequest";
 import { buildNewsFeed, FEED_COLUMN_LIMIT } from "@/lib/news/feedService";
 import { evaluatePushAudienceForNewsItem } from "@/lib/push/pushAudience";
 import {
@@ -19,7 +20,10 @@ import type {
    PUBLIC API
    ========================================================================== */
 
-export async function dispatchPushForNewsItem(newsItemId: string) {
+export async function dispatchPushForNewsItem(
+  newsItemId: string,
+  candidateCache?: NewsFeedCandidateCache,
+) {
   const supabase = supabaseService();
 
   /* ========================================================================
@@ -62,6 +66,7 @@ export async function dispatchPushForNewsItem(newsItemId: string) {
       personalized: true,
       hideRead: false,
       limit: FEED_COLUMN_LIMIT,
+      candidateCache,
     });
 
     if (feedResult.includedIds.has(news.id)) {

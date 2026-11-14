@@ -1,3 +1,4 @@
+import type { NewsFeedCandidateCache } from "@/lib/feed/newsFeedRequest";
 import { buildNewsFeed, FEED_COLUMN_LIMIT } from "@/lib/news/feedService";
 import { evaluatePushAudienceForNewsItem } from "@/lib/push/pushAudience";
 import { supabaseService } from "@/lib/supabase";
@@ -43,6 +44,7 @@ function buildReason(args: {
 }
 export async function auditFavoriteDeliveryForNewsItem(
   newsItemId: string,
+  candidateCache?: NewsFeedCandidateCache,
 ): Promise<FavoriteDeliveryAuditResult> {
   const supabase = supabaseService();
   const evaluation = await evaluatePushAudienceForNewsItem(supabase, newsItemId);
@@ -87,6 +89,7 @@ export async function auditFavoriteDeliveryForNewsItem(
       personalized: true,
       includeDebug: true,
       limit: FEED_COLUMN_LIMIT,
+      candidateCache,
     });
 
     const feedEligible = feedResult.includedIds.has(newsItemId);
