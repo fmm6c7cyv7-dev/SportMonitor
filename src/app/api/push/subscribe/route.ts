@@ -2,6 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { supabaseService } from "@/lib/supabase";
+import { isAllowedPushEndpoint } from "@/lib/server/pushEndpoint";
 import {
   guardPublicApi,
   isSafeDeviceId,
@@ -45,11 +46,7 @@ function isSafePushEndpoint(value: unknown): value is string {
 
   if (!endpoint || endpoint.length > MAX_ENDPOINT_LENGTH) return false;
 
-  try {
-    return new URL(endpoint).protocol === "https:";
-  } catch {
-    return false;
-  }
+  return isAllowedPushEndpoint(endpoint);
 }
 
 function isSafePushKey(
