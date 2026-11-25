@@ -2,6 +2,7 @@
 
 import { createECDH } from "node:crypto";
 import webpush from "web-push";
+import { isAllowedPushEndpoint } from "@/lib/server/pushEndpoint";
 
 /* ==========================================================================
    TYPES
@@ -121,6 +122,14 @@ export async function sendWebPush(
 ) {
   ensureVapidConfigured();
 
+  // Defense in depth: rows saved before the allowlist existed must never make
+  // the server call arbitrary hosts. statusCode 410 makes callers disable the row.
+  if (!isAllowedPushEndpoint(sub.endpoint)) {
+    throw Object.assign(new Error("Push endpoint host is not allowed"), {
+      statusCode: 410,
+    });
+  }
+
   const pushSubscription = buildPushSubscription(sub);
   const payloadString = buildPayloadString(payload);
 
@@ -128,6 +137,7 @@ export async function sendWebPush(
     return await webpush.sendNotification(
       pushSubscription as WebPushSubscription,
       payloadString,
+      { timeout: 10_000 },
     );
   } catch (error) {
     console.error(
