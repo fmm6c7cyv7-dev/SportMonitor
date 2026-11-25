@@ -1,5 +1,15 @@
 # Changelog
 
+## [6.5.1] - 2026-11-25
+
+### Förbättrat
+- Omfattande säkerhetsuppdatering av plattform, beroenden och notishantering för en ännu tryggare upplevelse på SportMonitor.se.
+- Förstärkt åtkomstskydd i databasen med åtstramade rättigheter.
+- Uppdateringsdialogen informerar användare om den nya säkerhetsuppdateringen.
+
+### Oförändrat
+- Inga förändringar av nyhetsurval, ranking, favoriter, VIP eller flödets utseende.
+
 ## [6.4.3] - 2026-11-14
 
 ### Rättat

@@ -53,7 +53,7 @@ export default function WelcomeModal() {
         {welcome ? "SportMonitor" : "Nytt i SportMonitor"} · v{RELEASE_VERSION}
       </p>
       <h2 id={titleId} className="text-xl font-bold leading-tight text-white">
-        {welcome ? <>Välkommen till Sport<span style={{ color: brandGold }}>Monitor</span></> : "Färre upprepningar i nyhetsflödet"}
+        {welcome ? <>Välkommen till Sport<span style={{ color: brandGold }}>Monitor</span></> : "Stärkt säkerhet på SportMonitor"}
       </h2>
       {welcome ? (
         <>
@@ -65,13 +65,13 @@ export default function WelcomeModal() {
             <p><b className="text-slate-100">⚡ Realtid:</b> Sidan uppdateras automatiskt var 45:e sekund för att du inte ska missa något.</p>
           </div>
           <h3 className="mb-2 border-t border-slate-700 pt-4 text-sm font-semibold" style={{ color: brandGold }}>
-            Nytt: färre upprepningar i nyhetsflödet
+            Nytt: stärkt säkerhet på SportMonitor
           </h3>
         </>
       ) : null}
       <div id={descriptionId} className="mt-3 space-y-3 text-sm leading-relaxed text-slate-300">
-        <p>Vi har förbättrat hur SportMonitor hittar <strong className="text-white">flera artiklar om samma händelse</strong>. Vårt mål är att visa den mest relevanta källan och minska upprepningar i flödet.</p>
-        <p>En ny artikel från en annan källa kan ersätta en äldre version. <strong className="text-white">Väsentliga uppföljningar</strong> ska fortfarande få plats. AI-bedömningen är försiktig och ersätter inte våra vanliga regler för relevans, favoriter eller VIP.</p>
+        <p>Vi har genomfört en omfattande <strong className="text-white">säkerhetsuppdatering av SportMonitor.se</strong>. Plattformen och bakomliggande system har uppdaterats för att ge ett ännu starkare skydd.</p>
+        <p>Vår <strong className="text-white">databas har fått förstärkt åtkomstskydd</strong> och kommunikationen för notiser har skärpts ytterligare. Allt fungerar precis som vanligt i flödet – så att du kan fortsätta surfa och följa dina favoriter tryggt på SportMonitor.se.</p>
       </div>
       <button
         type="button"
